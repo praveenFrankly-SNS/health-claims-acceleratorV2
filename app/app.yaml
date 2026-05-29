@@ -1,0 +1,4 @@
+command: ["streamlit", "run", "app.py"]
+env:
+  - name: "DATABRICKS_HTTP_PATH"
+    value: "/sql/1.0/warehouses/305d2bf689add41b"

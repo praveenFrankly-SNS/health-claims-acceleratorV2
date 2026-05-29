@@ -1,0 +1,167 @@
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # 04 Agent 2: Fraud Signal Detection
+# MAGIC Uses a mock ML model for structured features and LLM for narrative consistency check.
+
+# COMMAND ----------
+
+# MAGIC %pip install xgboost pandas mlflow
+
+# COMMAND ----------
+
+try:
+    dbutils.library.restartPython()
+except Exception:
+    pass
+
+# COMMAND ----------
+
+import os
+import sys
+import random
+import json
+
+import importlib
+
+notebook_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
+sys.path.append(os.path.abspath(os.path.join(notebook_dir, "..")))
+import config.llm_client
+importlib.reload(config.llm_client)  # Force reload to avoid Databricks caching
+from config.llm_client import llm
+
+# Force inject Databricks credentials if running in a Notebook
+try:
+    ctx = dbutils.notebook.entry_point.getDbutils().notebook().getContext()
+    if not llm.workspace_url:
+        llm.workspace_url = ctx.apiUrl().get()
+    if not llm.databricks_token:
+        llm.databricks_token = ctx.apiToken().get()
+except Exception:
+    pass
+
+def get_ml_fraud_score(claim_state: dict) -> float:
+    import pandas as pd
+    import mlflow
+    import pickle
+    import os
+    
+    # Extract features from state
+    extracted = claim_state.get("extracted_data", {})
+    amount = float(extracted.get("claimed_amount", 0))
+    
+    # Try to load the trained model (prioritize local pickle for Free Edition)
+    model = None
+    repo_root = "." if os.path.exists("./models") else ".."
+    local_model_path = f"{repo_root}/models/fraud_xgboost.pkl"
+    
+    if os.path.exists(local_model_path):
+        try:
+            with open(local_model_path, "rb") as f:
+                model = pickle.load(f)
+        except Exception as e:
+            print(f"[Agent 2] Could not load local ML model: {e}")
+    else:
+        try:
+            import logging
+            logging.getLogger("pyspark.sql.connect.client.core").setLevel(logging.CRITICAL)
+            model = mlflow.xgboost.load_model("models:/health_claims_dev.claims.fraud_detection_xgboost/latest")
+        except Exception:
+            print(f"[Agent 2] ML model not found locally or in MLflow. Please run 04a_train_fraud_model.py first!")
+            
+    # Need amount_to_premium_ratio, days_since_inception, claim_velocity
+    # Since these are computed in Silver DLT, in a real streaming pipeline they'd be read from the DB.
+    # For now we'll check if they are in the claim_state (if we enrich it), or we will mock them if missing.
+    premium = float(extracted.get("premium_paid", 12000))
+    if premium == 0: premium = 1
+    
+    # If the orchestrator passes these from silver_table, we use them.
+    # Otherwise we estimate.
+    features = {
+        'claimed_amount': [amount],
+        'amount_to_premium_ratio': [claim_state.get("amount_to_premium_ratio", amount / premium)],
+        'days_since_inception': [claim_state.get("days_since_inception", 500)],
+        'claim_velocity': [claim_state.get("claim_velocity", 0)]
+    }
+    
+    df_features = pd.DataFrame(features)
+    
+    try:
+        # Predict probability of fraud (class 1)
+        prob = model.predict_proba(df_features)[0][1]
+        return float(prob)
+    except Exception as e:
+        print(f"[Agent 2] ML Prediction failed: {e}")
+        return 0.1
+
+def agent2_fraud(claim_state: dict) -> dict:
+    """
+    Checks for fraud using ML structured features and LLM narrative checking.
+    """
+    claim_id = claim_state.get("claim_id")
+    print(f"[Agent 2] Processing fraud detection for {claim_id}...")
+
+    ml_score = get_ml_fraud_score(claim_state)
+    
+    # LLM Narrative Check
+    if os.path.exists("./data/raw/unstructured"):
+        repo_root = "."
+    elif os.path.exists("../data/raw/unstructured"):
+        repo_root = ".."
+    else:
+        repo_root = "."
+
+    file_path = f"{repo_root}/data/raw/unstructured/{claim_id}_discharge_summary.txt"
+    document_text = ""
+    if os.path.exists(file_path):
+        with open(file_path, "r") as f:
+            document_text = f.read()
+
+    prompt = f"""
+    You are an AI Fraud Detection Agent. Analyze the following medical discharge summary for inconsistencies.
+    Look for: upcoding, unbundling, inflated room rent, or contradictory statements.
+    
+    Document:
+    {document_text}
+    
+    Return a JSON object with:
+    - llm_fraud_score (float 0-1)
+    - narrative_signals (list of strings describing any red flags found, or empty list if none)
+    Do NOT output anything except valid JSON.
+    """
+    
+    response_text = llm.generate(prompt, max_tokens=300)
+    
+    llm_fraud_score = 0.1
+    signals = []
+    try:
+        start_idx = response_text.find("{")
+        end_idx = response_text.rfind("}") + 1
+        if start_idx != -1 and end_idx != -1:
+            data = json.loads(response_text[start_idx:end_idx])
+            llm_fraud_score = data.get("llm_fraud_score", 0.1)
+            signals = data.get("narrative_signals", [])
+    except Exception as e:
+        print(f"[Agent 2] JSON parse error: {e}")
+
+    final_score = (ml_score * 0.6) + (llm_fraud_score * 0.4)
+    confidence = "HIGH" if final_score > 0.6 else ("MEDIUM" if final_score > 0.3 else "LOW")
+    
+    result = {
+        "fraud": {
+            "fraud_score": round(final_score, 2),
+            "confidence": confidence,
+            "fraud_signals": signals
+        }
+    }
+    
+    claim_state.update(result)
+    return claim_state
+
+# COMMAND ----------
+
+# Standalone Test
+if __name__ == "__main__":
+    test_state = {"claim_id": "CLM-2026-10000", "extracted_data": {"claimed_amount": 250000}}
+    res = agent2_fraud(test_state)
+    import json
+    print(json.dumps(res, indent=2))

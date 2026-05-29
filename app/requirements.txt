@@ -1,0 +1,10 @@
+streamlit
+pandas
+databricks-connect
+langchain_databricks
+langchain_core
+mlflow
+xgboost
+databricks-vectorsearch
+sentence-transformers
+scikit-learn
