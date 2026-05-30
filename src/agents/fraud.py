@@ -33,10 +33,11 @@ def get_ml_fraud_score(claim_state: dict) -> float:
         try:
             import logging
             logging.getLogger("pyspark.sql.connect.client.core").setLevel(logging.CRITICAL)
+            mlflow.set_registry_uri("databricks-uc")
             # Use @champion alias instead of /latest
             model = mlflow.xgboost.load_model("models:/health_claims_dev.claims.fraud_detection_xgboost@champion")
-        except Exception:
-            print(f"[Agent 2] ML model not found locally or in MLflow. Please run 04a_train_fraud_model.py first!")
+        except Exception as e:
+            print(f"[Agent 2] ML model not found locally or in MLflow. Exact Error: {e}")
             
     premium = float(extracted.get("premium_paid", 12000))
     if premium == 0: premium = 1
@@ -55,7 +56,7 @@ def get_ml_fraud_score(claim_state: dict) -> float:
         return float(prob)
     except Exception as e:
         print(f"[Agent 2] ML Prediction failed: {e}")
-        return 0.1
+        return -1.0
 
 def agent2_fraud(claim_state: dict) -> dict:
     """
@@ -104,7 +105,11 @@ def agent2_fraud(claim_state: dict) -> dict:
     except Exception as e:
         print(f"[Agent 2] JSON parse error: {e}")
 
-    final_score = (ml_score * 0.6) + (llm_fraud_score * 0.4)
+    if ml_score == -1.0:
+        final_score = llm_fraud_score
+    else:
+        final_score = (ml_score * 0.6) + (llm_fraud_score * 0.4)
+        
     confidence = "HIGH" if final_score > 0.6 else ("MEDIUM" if final_score > 0.3 else "LOW")
     
     result = {

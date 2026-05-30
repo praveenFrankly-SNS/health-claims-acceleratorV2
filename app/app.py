@@ -147,7 +147,7 @@ with tab1:
                         st.write("💰 Agent 4: Reserve Prediction...")
                         try:
                             claim_state = agent4_reserve(claim_state)
-                            st.json(claim_state.get('reserves', {}))
+                            st.json(claim_state.get('reserve', {}))
                         except Exception as e:
                             st.error(f"Agent 4 Failed: {e}")
                             
