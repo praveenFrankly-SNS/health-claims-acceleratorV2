@@ -25,8 +25,15 @@ from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-CATALOG_NAME = "health_claims_dev"
-SCHEMA_NAME = "claims"
+try:
+    dbutils.widgets.text("catalog", "health_claims_dev")
+    dbutils.widgets.text("schema", "claims")
+    CATALOG_NAME = dbutils.widgets.get("catalog")
+    SCHEMA_NAME = dbutils.widgets.get("schema")
+except Exception:
+    CATALOG_NAME = "health_claims_dev"
+    SCHEMA_NAME = "claims"
+
 MODEL_NAME = f"{CATALOG_NAME}.{SCHEMA_NAME}.fraud_detection_xgboost"
 
 # Try to use Spark to get the data if in Databricks, otherwise fallback to local CSVs

@@ -318,8 +318,6 @@ for tier in ["Silver", "Gold", "Premium"]:
         if meta:
             form_metadata[(tier, ver)] = meta
 
-broadcast_metadata = spark.sparkContext.broadcast(form_metadata)
-
 # For each claim, compute what percentage of bill lines exceed structured limits
 # This is a deterministic computation — no LLM involved
 from pyspark.sql.functions import udf
@@ -336,7 +334,7 @@ def compute_pct_exceeding_limits(plan_tier, form_version, total_sum_insured,
     if not plan_tier or not form_version:
         return 0.0
 
-    meta = broadcast_metadata.value.get((plan_tier, form_version))
+    meta = form_metadata.get((plan_tier, form_version))
     if not meta:
         return 0.0
 
@@ -435,6 +433,27 @@ else:
     spark.sql(f"""ALTER TABLE {silver_full_name}
                   SET TBLPROPERTIES ('sensitivity'='PHI', 'classification'='restricted')""")
 
+# Also write to silver_claims for downstream models and orchestrator compatibility
+silver_claims_full_name = f"{CATALOG_NAME}.{SCHEMA_NAME}.silver_claims"
+print(f"Writing compatibility table to {silver_claims_full_name}...")
+
+df_silver_claims = df_silver.join(
+    df_claims.select("claim_id", "is_fraud"),
+    on="claim_id",
+    how="left"
+).withColumn("claim_velocity", col("policy_claim_velocity_90d"))
+
+if spark.catalog.tableExists(silver_claims_full_name):
+    deltaTableClaims = DeltaTable.forName(spark, silver_claims_full_name)
+    deltaTableClaims.alias("t").merge(
+        df_silver_claims.dropDuplicates(["claim_id"]).alias("s"),
+        "t.claim_id = s.claim_id"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+else:
+    df_silver_claims.write.format("delta").saveAsTable(silver_claims_full_name)
+    spark.sql(f"ALTER TABLE {silver_claims_full_name} SET TBLPROPERTIES ('sensitivity'='PHI', 'classification'='restricted')")
+
 row_count = spark.table(silver_full_name).count()
-print(f"\nSilver preparation complete. Features materialized: {row_count} rows")
+row_count_claims = spark.table(silver_claims_full_name).count()
+print(f"\nSilver preparation complete. Features materialized: {row_count} rows, Compatibility table: {row_count_claims} rows")
 print(f"Pipeline version: {FEATURE_PIPELINE_VERSION}")

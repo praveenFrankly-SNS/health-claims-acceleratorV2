@@ -1,4 +1,6 @@
-streamlit
+fastapi
+uvicorn
+sse-starlette
 pandas
 databricks-connect
 langchain_databricks
@@ -8,3 +10,4 @@ xgboost
 databricks-vectorsearch
 sentence-transformers
 scikit-learn
+python-dotenv

@@ -15,80 +15,61 @@ variables:
     description: The node type to use for the job cluster (cloud agnostic or pool)
     default: Standard_D3_v2
 
-workspace:
-  host: ${workspace.host}
 
-environments:
-  default:
-    workspace:
-      host: ${workspace.host}
 
 resources:
   jobs:
     health_claims_setup_training:
       name: "[MVP] Health Claims Setup and Training"
       parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
         - name: use_supabase
           default: "true"
         - name: supabase_host
           default: "aws-1-ap-northeast-1.pooler.supabase.com"
         - name: supabase_port
           default: "5432"
-          description: "Database port (default: 5432)"
         - name: supabase_db
           default: "postgres"
-          description: "Database name (default: postgres)"
         - name: supabase_user
           default: "postgres.nerwqbauracfinfvunul"
         - name: supabase_password
           default: ""
-      job_clusters:
-        - job_cluster_key: default_cluster
-          new_cluster:
-            spark_version: 15.4.x-scala2.12
-            node_type_id: ${var.node_type_id}
-            num_workers: 1
-            spark_env_vars:
-              CATALOG_NAME: ${var.catalog}
-              SCHEMA_NAME: ${var.schema}
       tasks:
         - task_key: setup
-          job_cluster_key: default_cluster
           notebook_task:
             notebook_path: ./notebooks/00_setup.py
             source: WORKSPACE
 
         - task_key: bronze
           depends_on: [{ task_key: setup }]
-          job_cluster_key: default_cluster
           notebook_task:
             notebook_path: ./notebooks/01_bronze_ingestion.py
             source: WORKSPACE
 
         - task_key: silver
           depends_on: [{ task_key: bronze }]
-          job_cluster_key: default_cluster
           notebook_task:
             notebook_path: ./notebooks/02_silver_preparation_spark_sim.py
             source: WORKSPACE
 
         - task_key: train_fraud
           depends_on: [{ task_key: silver }]
-          job_cluster_key: default_cluster
           notebook_task:
             notebook_path: ./notebooks/04a_train_fraud_model.py
             source: WORKSPACE
 
         - task_key: train_reserve
           depends_on: [{ task_key: silver }]
-          job_cluster_key: default_cluster
           notebook_task:
             notebook_path: ./notebooks/06a_train_reserve_model.py
             source: WORKSPACE
 
         - task_key: create_vector_index
           depends_on: [{ task_key: silver }]
-          job_cluster_key: default_cluster
           notebook_task:
             notebook_path: ./notebooks/04b_create_policy_vector_index.py
             source: WORKSPACE
@@ -100,60 +81,53 @@ resources:
         timezone_id: "UTC"
         pause_status: "UNPAUSED"
       parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
         - name: use_supabase
           default: "true"
         - name: supabase_host
           default: "aws-1-ap-northeast-1.pooler.supabase.com"
         - name: supabase_port
           default: "5432"
-          description: "Database port (default: 5432)"
         - name: supabase_db
           default: "postgres"
-          description: "Database name (default: postgres)"
         - name: supabase_user
           default: "postgres.nerwqbauracfinfvunul"
         - name: supabase_password
           default: ""
-      job_clusters:
-        - job_cluster_key: default_cluster
-          new_cluster:
-            spark_version: 15.4.x-scala2.12
-            node_type_id: ${var.node_type_id}
-            num_workers: 1
-            spark_env_vars:
-              CATALOG_NAME: ${var.catalog}
-              SCHEMA_NAME: ${var.schema}
       tasks:
         - task_key: bronze
-          job_cluster_key: default_cluster
           notebook_task:
             notebook_path: ./notebooks/01_bronze_ingestion.py
             source: WORKSPACE
 
         - task_key: silver
           depends_on: [{ task_key: bronze }]
-          job_cluster_key: default_cluster
           notebook_task:
             notebook_path: ./notebooks/02_silver_preparation_spark_sim.py
             source: WORKSPACE
 
         - task_key: orchestrate
           depends_on: [{ task_key: silver }]
-          job_cluster_key: default_cluster
           notebook_task:
             notebook_path: ./notebooks/07_supervisor_orchestrator.py
             source: WORKSPACE
 
         - task_key: gold_serving
           depends_on: [{ task_key: orchestrate }]
-          job_cluster_key: default_cluster
           notebook_task:
             notebook_path: ./notebooks/09_gold_serving.py
             source: WORKSPACE
 
         - task_key: evaluation
           depends_on: [{ task_key: gold_serving }]
-          job_cluster_key: default_cluster
           notebook_task:
-            notebook_path: ./notebooks/10_evaluation.py
-            source: WORKSPACE
+             notebook_path: ./notebooks/10_evaluation.py
+             source: WORKSPACE
+
+  apps:
+    health_claims_dashboard:
+      name: "health-claims-dashboard"
+      source_code_path: ./app
