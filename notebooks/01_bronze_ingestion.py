@@ -18,6 +18,8 @@ dbutils.widgets.text("use_supabase", "false")
 dbutils.widgets.text("supabase_host", "")
 dbutils.widgets.text("supabase_port", "5432")
 dbutils.widgets.text("supabase_db", "postgres")
+dbutils.widgets.text("supabase_user", "")
+dbutils.widgets.text("supabase_password", "")
 
 CATALOG_NAME = dbutils.widgets.get("catalog")
 SCHEMA_NAME = dbutils.widgets.get("schema")
@@ -47,10 +49,17 @@ if USE_SUPABASE:
         # 2. Fallback to environment variables
         DB_USER = os.environ.get("SUPABASE_USER", "")
         DB_PASSWORD = os.environ.get("SUPABASE_PASSWORD", "")
+        
+        # 3. Fallback to widgets
+        if not DB_USER:
+            DB_USER = dbutils.widgets.get("supabase_user")
+        if not DB_PASSWORD:
+            DB_PASSWORD = dbutils.widgets.get("supabase_password")
+            
         if DB_USER and DB_PASSWORD:
-            print("✓ Successfully loaded credentials from environment variables")
+            print("✓ Successfully loaded credentials from environment variables / widgets")
         else:
-            print("Warning: Database credentials not found in secrets or environment variables. JDBC loading may fail.")
+            print("Warning: Database credentials not found in secrets, environment variables, or widgets. JDBC loading may fail.")
 
 # COMMAND ----------
 

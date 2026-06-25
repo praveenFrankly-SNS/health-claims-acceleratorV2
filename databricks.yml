@@ -31,13 +31,17 @@ resources:
         - name: use_supabase
           default: "true"
         - name: supabase_host
-          default: ""
+          default: "aws-1-ap-northeast-1.pooler.supabase.com"
         - name: supabase_port
           default: "5432"
           description: "Database port (default: 5432)"
         - name: supabase_db
           default: "postgres"
           description: "Database name (default: postgres)"
+        - name: supabase_user
+          default: "postgres.nerwqbauracfinfvunul"
+        - name: supabase_password
+          default: ""
       job_clusters:
         - job_cluster_key: default_cluster
           new_cluster:
@@ -99,13 +103,17 @@ resources:
         - name: use_supabase
           default: "true"
         - name: supabase_host
-          default: ""
+          default: "aws-1-ap-northeast-1.pooler.supabase.com"
         - name: supabase_port
           default: "5432"
           description: "Database port (default: 5432)"
         - name: supabase_db
           default: "postgres"
           description: "Database name (default: postgres)"
+        - name: supabase_user
+          default: "postgres.nerwqbauracfinfvunul"
+        - name: supabase_password
+          default: ""
       job_clusters:
         - job_cluster_key: default_cluster
           new_cluster:
