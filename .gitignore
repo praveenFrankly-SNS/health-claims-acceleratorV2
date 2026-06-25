@@ -6,3 +6,6 @@ data/
 **/models/*.pkl
 
 /docs/
+
+UBIQUITOUS_LANGUAGE.md
+codebase_architecture_deep_dive.md

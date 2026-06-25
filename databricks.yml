@@ -29,7 +29,7 @@ resources:
       name: "[MVP] Health Claims Setup and Training"
       parameters:
         - name: use_supabase
-          default: "false"
+          default: "true"
         - name: supabase_host
           default: ""
         - name: supabase_port
@@ -97,7 +97,7 @@ resources:
         pause_status: "UNPAUSED"
       parameters:
         - name: use_supabase
-          default: "false"
+          default: "true"
         - name: supabase_host
           default: ""
         - name: supabase_port
