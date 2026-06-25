@@ -25,14 +25,28 @@ environments:
 
 resources:
   jobs:
-    health_claims_pipeline:
-      name: "[MVP] Health Claims Pipeline"
+    health_claims_setup_training:
+      name: "[MVP] Health Claims Setup and Training"
+      parameters:
+        - name: use_supabase
+          default: "false"
+        - name: supabase_host
+          default: ""
+        - name: supabase_port
+          default: "5432"
+          description: "Database port (default: 5432)"
+        - name: supabase_db
+          default: "postgres"
+          description: "Database name (default: postgres)"
       job_clusters:
         - job_cluster_key: default_cluster
           new_cluster:
             spark_version: 15.4.x-scala2.12
             node_type_id: ${var.node_type_id}
             num_workers: 1
+            spark_env_vars:
+              CATALOG_NAME: ${var.catalog}
+              SCHEMA_NAME: ${var.schema}
       tasks:
         - task_key: setup
           job_cluster_key: default_cluster
@@ -40,15 +54,8 @@ resources:
             notebook_path: ./notebooks/00_setup.py
             source: WORKSPACE
 
-        - task_key: synthetic_data
-          depends_on: [{ task_key: setup }]
-          job_cluster_key: default_cluster
-          notebook_task:
-            notebook_path: ./data/generate_synthetic_data.py
-            source: WORKSPACE
-
         - task_key: bronze
-          depends_on: [{ task_key: synthetic_data }]
+          depends_on: [{ task_key: setup }]
           job_cluster_key: default_cluster
           notebook_task:
             notebook_path: ./notebooks/01_bronze_ingestion.py
@@ -82,8 +89,48 @@ resources:
             notebook_path: ./notebooks/04b_create_policy_vector_index.py
             source: WORKSPACE
 
+    health_claims_daily_inference:
+      name: "[MVP] Health Claims Daily Inference"
+      schedule:
+        quartz_cron_expression: "0 0 2 * * ?"
+        timezone_id: "UTC"
+        pause_status: "UNPAUSED"
+      parameters:
+        - name: use_supabase
+          default: "false"
+        - name: supabase_host
+          default: ""
+        - name: supabase_port
+          default: "5432"
+          description: "Database port (default: 5432)"
+        - name: supabase_db
+          default: "postgres"
+          description: "Database name (default: postgres)"
+      job_clusters:
+        - job_cluster_key: default_cluster
+          new_cluster:
+            spark_version: 15.4.x-scala2.12
+            node_type_id: ${var.node_type_id}
+            num_workers: 1
+            spark_env_vars:
+              CATALOG_NAME: ${var.catalog}
+              SCHEMA_NAME: ${var.schema}
+      tasks:
+        - task_key: bronze
+          job_cluster_key: default_cluster
+          notebook_task:
+            notebook_path: ./notebooks/01_bronze_ingestion.py
+            source: WORKSPACE
+
+        - task_key: silver
+          depends_on: [{ task_key: bronze }]
+          job_cluster_key: default_cluster
+          notebook_task:
+            notebook_path: ./notebooks/02_silver_preparation_spark_sim.py
+            source: WORKSPACE
+
         - task_key: orchestrate
-          depends_on: [{ task_key: train_fraud }, { task_key: train_reserve }, { task_key: create_vector_index }]
+          depends_on: [{ task_key: silver }]
           job_cluster_key: default_cluster
           notebook_task:
             notebook_path: ./notebooks/07_supervisor_orchestrator.py

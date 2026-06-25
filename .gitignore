@@ -2,10 +2,7 @@
 __pycache__/
 *.pyc
 .env
-data/raw/unstructured/*
-data/raw/structured/*
-!data/raw/structured/policy_master.csv
-!data/raw/structured/network_hospitals.csv
+data/
 **/models/*.pkl
 
 /docs/

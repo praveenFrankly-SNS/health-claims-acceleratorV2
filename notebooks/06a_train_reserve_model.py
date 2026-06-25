@@ -27,8 +27,14 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.pipeline import Pipeline
 import pickle
 
-CATALOG_NAME = "health_claims_dev"
-SCHEMA_NAME = "claims"
+try:
+    dbutils.widgets.text("catalog", "health_claims_dev")
+    dbutils.widgets.text("schema", "claims")
+    CATALOG_NAME = dbutils.widgets.get("catalog")
+    SCHEMA_NAME = dbutils.widgets.get("schema")
+except Exception:
+    CATALOG_NAME = "health_claims_dev"
+    SCHEMA_NAME = "claims"
 MODEL_NAME = f"{CATALOG_NAME}.{SCHEMA_NAME}.reserve_estimation_gbm"
 
 try:

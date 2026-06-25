@@ -102,7 +102,19 @@ def agent2_fraud(claim_state: dict) -> dict:
 
     ml_score = get_ml_fraud_score(claim_state)
     
+    # Try UC Volume first, then local development paths
+    catalog = "health_claims_dev"
+    schema = "claims"
+    try:
+        dbutils.widgets.text("catalog", "health_claims_dev")
+        dbutils.widgets.text("schema", "claims")
+        catalog = dbutils.widgets.get("catalog")
+        schema = dbutils.widgets.get("schema")
+    except Exception:
+        pass
+
     # LLM Narrative Check
+    repo_root = "."
     if os.path.exists("./data/raw/unstructured"):
         repo_root = "."
     elif os.path.exists("../data/raw/unstructured"):
@@ -110,11 +122,33 @@ def agent2_fraud(claim_state: dict) -> dict:
     else:
         repo_root = "."
 
-    file_path = f"{repo_root}/data/raw/unstructured/{claim_id}_discharge_summary.txt"
+    paths_to_try = [
+        f"{repo_root}/data/raw/unstructured/{claim_id}_discharge_summary.txt",
+        f"{repo_root}/data/raw/unstructured/{claim_id}_discharge_summary.pdf",
+        f"/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries/{claim_id}_discharge_summary.txt",
+        f"/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries/{claim_id}_discharge_summary.pdf",
+        f"/dbfs/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries/{claim_id}_discharge_summary.txt",
+        f"/dbfs/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries/{claim_id}_discharge_summary.pdf",
+    ]
+    
     document_text = ""
-    if os.path.exists(file_path):
-        with open(file_path, "r") as f:
-            document_text = f.read()
+    for path in paths_to_try:
+        if os.path.exists(path):
+            try:
+                if path.endswith(".pdf"):
+                    with open(path, "rb") as f:
+                        raw = f.read()
+                    import PyPDF2
+                    from io import BytesIO
+                    reader = PyPDF2.PdfReader(BytesIO(raw))
+                    document_text = "\n".join(page.extract_text() for page in reader.pages)
+                else:
+                    with open(path, "r", encoding="utf-8", errors="replace") as f:
+                        document_text = f.read()
+                if document_text.strip():
+                    break
+            except Exception as e:
+                print(f"[Agent 2] Failed to read narrative from {path}: {e}")
 
     prompt = f"""
     You are an AI Fraud Detection Agent. Analyze the following medical discharge summary for inconsistencies.

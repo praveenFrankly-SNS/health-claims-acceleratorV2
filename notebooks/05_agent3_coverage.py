@@ -40,9 +40,27 @@ except Exception:
 
 def retrieve_policy_chunks(policy_number: str, diagnosis: str, hospital: str, plan_tier: str) -> dict:
     import re
-    # Read actual policy document from disk
+    # Resolve catalog/schema widgets
+    catalog = "health_claims_dev"
+    schema = "claims"
+    try:
+        catalog = dbutils.widgets.get("catalog")
+        schema = dbutils.widgets.get("schema")
+    except Exception:
+        pass
+
+    # Read actual policy document from disk/Volumes
     repo_root = "." if os.path.exists("./data") else ".."
     file_path = f"{repo_root}/data/policy_forms/{plan_tier}.txt"
+    
+    if not os.path.exists(file_path):
+        vol_path = f"/Volumes/{catalog}/{schema}/policy_forms/{plan_tier}.txt"
+        if os.path.exists(vol_path):
+            file_path = vol_path
+        else:
+            dbfs_vol_path = f"/dbfs/Volumes/{catalog}/{schema}/policy_forms/{plan_tier}.txt"
+            if os.path.exists(dbfs_vol_path):
+                file_path = dbfs_vol_path
     
     sections = []
     try:
@@ -74,8 +92,8 @@ def retrieve_policy_chunks(policy_number: str, diagnosis: str, hospital: str, pl
         from databricks.vector_search.client import VectorSearchClient
         vsc = VectorSearchClient()
         
-        endpoint_name = "aml_policy_vs_endpoint"
-        index_name = "health_claims_dev.claims.policy_forms_index"
+        endpoint_name = "shared_vs_endpoint"
+        index_name = f"{catalog}.{schema}.policy_forms_index"
         
         # This will fail gracefully in the free version if endpoint is missing/not running
         index = vsc.get_index(endpoint_name, index_name)

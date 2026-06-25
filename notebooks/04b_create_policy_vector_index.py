@@ -27,10 +27,13 @@ from databricks.vector_search.client import VectorSearchClient
 
 spark = SparkSession.builder.getOrCreate()
 
-catalog_name = "health_claims_dev"
-schema_name = "claims"
+dbutils.widgets.text("catalog", "health_claims_dev")
+dbutils.widgets.text("schema", "claims")
+catalog_name = dbutils.widgets.get("catalog")
+schema_name = dbutils.widgets.get("schema")
+
 source_table = f"{catalog_name}.{schema_name}.policy_chunks"
-vs_endpoint_name = "aml_policy_vs_endpoint"
+vs_endpoint_name = "shared_vs_endpoint"
 vs_index_name = f"{catalog_name}.{schema_name}.policy_forms_index"
 embedding_model = "databricks-bge-large-en"
 
@@ -40,6 +43,18 @@ embedding_model = "databricks-bge-large-en"
 print("Parsing policy forms...")
 repo_root = "." if os.path.exists("./data") else ".."
 policy_dir = f"{repo_root}/data/policy_forms"
+
+# Fallback to UC Volume if local directory is missing
+if not os.path.exists(policy_dir):
+    vol_path = f"/Volumes/{catalog_name}/{schema_name}/policy_forms"
+    if os.path.exists(vol_path):
+        policy_dir = vol_path
+        print(f"Using UC Volume policy path: {policy_dir}")
+    else:
+        dbfs_vol_path = f"/dbfs/Volumes/{catalog_name}/{schema_name}/policy_forms"
+        if os.path.exists(dbfs_vol_path):
+            policy_dir = dbfs_vol_path
+            print(f"Using DBFS UC Volume policy path: {policy_dir}")
 
 rows = []
 # Ensure policy_dir exists

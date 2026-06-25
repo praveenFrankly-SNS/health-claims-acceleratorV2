@@ -1,3 +1,26 @@
-streamlit
-pandas
+# =============================================================================
+# Databricks Runtime (required for running on Databricks)
+# =============================================================================
 databricks-connect
+
+# =============================================================================
+# Local Development & Data Generation
+# =============================================================================
+pandas
+streamlit
+
+# PDF generation for realistic hospital documents
+fpdf2
+Pillow
+
+# PDF text extraction (used by Agent 1 - Document Intelligence)
+PyPDF2
+pdfminer.six
+
+# =============================================================================
+# Supabase Population (local script - data/populate_supabase.py)
+# =============================================================================
+supabase
+psycopg2-binary
+python-dotenv
+requests

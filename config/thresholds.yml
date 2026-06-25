@@ -1,16 +1,17 @@
 # Configuration Thresholds for Adjuster Allocation and Agents
+# All agent-tunable parameters live here — do NOT duplicate in source code.
 
 completeness_score_min: 0.80
 
-# Agent 2
+# Agent 2 — Fraud Detection
 fraud_score_cutoff: 0.70
 fraud_weight_ml: 0.60
 fraud_weight_llm: 0.40
 
-# Agent 3
+# Agent 3 — Coverage Eligibility
 coverage_similarity_threshold: 0.10
 
-# Agent 4
+# Agent 4 — Reserve Estimation
 reserve_p_band_low: 0.80
 reserve_p_band_high: 1.20
 
@@ -19,3 +20,6 @@ fraud_score_high_threshold: 0.70
 reserve_amount_high_threshold: 500000
 fraud_score_stp_threshold: 0.30
 reserve_amount_stp_threshold: 50000
+
+# Provider Blacklist — deterministic override
+blacklist_override_routing: SENIOR_FIELD_ADJUSTER

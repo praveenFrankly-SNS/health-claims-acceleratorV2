@@ -2,6 +2,71 @@ import os
 import json
 import urllib.request
 import urllib.error
+from typing import Optional, List
+from pydantic import BaseModel, Field
+
+
+# ---------------------------------------------------------------------------
+# Pydantic Models — typed contracts at agent seams
+# ---------------------------------------------------------------------------
+
+class DocExtractionOutput(BaseModel):
+    """Output from Agent 1 (Document Intelligence) LLM extraction."""
+    policy_number: Optional[str] = None
+    claimant_name: Optional[str] = None
+    admission_date: Optional[str] = None
+    discharge_date: Optional[str] = None
+    hospital_name: Optional[str] = None
+    diagnosis_icd: Optional[str] = None
+    claimed_amount: Optional[int] = None
+    attending_physician_registration_number: Optional[str] = None
+
+
+class MemberValidation(BaseModel):
+    """Result of cross-validating extracted data against policy_members."""
+    status: str = Field(description="PASSED, FAILED_POLICY_NOT_FOUND, FAILED_POLICY_LAPSED, "
+                                    "FAILED_NAME_MISMATCH, FAILED_COVERAGE_PERIOD, SKIPPED_DUE_TO_ERROR")
+    matched_member_id: Optional[str] = None
+    matched_member_name: Optional[str] = None
+    relationship_to_primary: Optional[str] = None
+    coverage_start_date: Optional[str] = None
+    coverage_end_date: Optional[str] = None
+    error_detail: Optional[str] = None
+
+
+class FraudLLMOutput(BaseModel):
+    """Output from Agent 2 (Fraud) LLM narrative analysis."""
+    llm_fraud_score: float = 0.1
+    narrative_signals: List[str] = Field(default_factory=list)
+    reasoning: str = "Normal claim processing."
+
+
+class FraudResult(BaseModel):
+    """Combined fraud assessment (ML + LLM blend)."""
+    fraud_score: float
+    confidence: str = Field(description="HIGH, MEDIUM, LOW")
+    fraud_signals: List[str] = Field(default_factory=list)
+    reasoning: str = ""
+    ml_score: float = -1.0
+    llm_score: float = 0.1
+    blacklist_status: bool = False
+    physician_fraud_ratio: float = 0.0
+
+
+class CoverageResult(BaseModel):
+    """Output from Agent 3 (Coverage Eligibility)."""
+    coverage_status: str = Field(description="COVERED, EXCLUDED, PARTIAL, NEEDS_REVIEW")
+    coverage_amount_estimate: int = 0
+    exclusions_triggered: List[str] = Field(default_factory=list)
+    policy_sections_cited: List[str] = Field(default_factory=list)
+    rag_similarity_score: Optional[float] = None
+    deterministic_deductions: Optional[dict] = None
+    notes: str = ""
+
+
+# ---------------------------------------------------------------------------
+# LLM Client
+# ---------------------------------------------------------------------------
 
 class GenericLLMClient:
     """
@@ -90,14 +155,14 @@ class GenericLLMClient:
         if "Coverage Eligibility Agent" in prompt or "Agent 3" in prompt:
             return '{"coverage_status": "COVERED", "coverage_amount_estimate": 0, "exclusions_triggered": [], "policy_sections_cited": ["Section 4.2", "Section 5.1"], "notes": "Mocked response"}'
         elif "Fraud Detection Agent" in prompt or "Agent 2" in prompt:
-            return '{"fraud_score": 0.1, "confidence": "HIGH", "reasoning": "Mocked response: Claim appears normal.", "flags": []}'
+            return '{"llm_fraud_score": 0.1, "narrative_signals": [], "reasoning": "Mocked response: Claim appears normal."}'
         elif "Document Intelligence Agent" in prompt or "Agent 1" in prompt:
             import re
-            pol_match = re.search(r"POL-HLT-\d+", prompt)
+            pol_match = re.search(r"POL-HLT-\d+(-T\d+)?", prompt)
             name_match = re.search(r"Patient \d+", prompt)
             policy = pol_match.group(0) if pol_match else "MOCK-POL"
             name = name_match.group(0) if name_match else "Mock Patient"
-            return f'{{"policy_number": "{policy}", "claimant_name": "{name}", "admission_date": "2026-01-01", "discharge_date": "2026-01-05", "hospital_name": "Apollo Hospital Coimbatore", "diagnosis_icd": "J18.9", "claimed_amount": 50000, "attending_physician_registration_number": "MC-5544"}}'
+            return f'{{"policy_number": "{policy}", "claimant_name": "{name}", "admission_date": "2026-01-01", "discharge_date": "2026-01-05", "hospital_name": "Apollo Hospital Coimbatore", "diagnosis_icd": "J18.9", "claimed_amount": 50000, "attending_physician_registration_number": "MC-1005"}}'
         return '{"result": "Mocked fallback response"}'
 
 llm = GenericLLMClient()

@@ -39,7 +39,18 @@ def agent1_doc_intelligence(claim_state: dict) -> dict:
 
     print(f"[Agent 1] Processing document extraction for {claim_id}...")
     
-    # Simulate reading from UC Volume
+    # Try UC Volume first, then local development paths
+    catalog = "health_claims_dev"
+    schema = "claims"
+    try:
+        dbutils.widgets.text("catalog", "health_claims_dev")
+        dbutils.widgets.text("schema", "claims")
+        catalog = dbutils.widgets.get("catalog")
+        schema = dbutils.widgets.get("schema")
+    except Exception:
+        pass
+
+    repo_root = "."
     if os.path.exists("./data/raw/unstructured"):
         repo_root = "."
     elif os.path.exists("../data/raw/unstructured"):
@@ -47,11 +58,35 @@ def agent1_doc_intelligence(claim_state: dict) -> dict:
     else:
         repo_root = "."
 
-    file_path = f"{repo_root}/data/raw/unstructured/{claim_id}_discharge_summary.txt"
-    try:
-        with open(file_path, "r") as f:
-            document_text = f.read()
-    except FileNotFoundError:
+    paths_to_try = [
+        f"{repo_root}/data/raw/unstructured/{claim_id}_discharge_summary.txt",
+        f"{repo_root}/data/raw/unstructured/{claim_id}_discharge_summary.pdf",
+        f"/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries/{claim_id}_discharge_summary.txt",
+        f"/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries/{claim_id}_discharge_summary.pdf",
+        f"/dbfs/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries/{claim_id}_discharge_summary.txt",
+        f"/dbfs/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries/{claim_id}_discharge_summary.pdf",
+    ]
+    
+    document_text = ""
+    for path in paths_to_try:
+        if os.path.exists(path):
+            try:
+                if path.endswith(".pdf"):
+                    with open(path, "rb") as f:
+                        raw = f.read()
+                    import PyPDF2
+                    from io import BytesIO
+                    reader = PyPDF2.PdfReader(BytesIO(raw))
+                    document_text = "\n".join(page.extract_text() for page in reader.pages)
+                else:
+                    with open(path, "r", encoding="utf-8", errors="replace") as f:
+                        document_text = f.read()
+                if document_text.strip():
+                    break
+            except Exception as e:
+                print(f"[Agent 1] Failed to read from {path}: {e}")
+
+    if not document_text:
         return {"completeness_score": 0.0, "missing_fields": ["discharge_summary"], "extracted_data": {}}
 
     prompt = f"""
