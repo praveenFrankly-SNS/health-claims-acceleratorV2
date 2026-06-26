@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: Medanta The Medicity Gurgaon
+Patient: Mohan Mishra | Policy: POL-HLT-20016-T1
+Admitted: 2023-07-27 | Discharged: 2023-08-05
+
+Principal Diagnosis: Fracture Treatment (S72.009A)
+Total Charges: 87797
+
+Physician: Dr. H. Patel, MC-1003

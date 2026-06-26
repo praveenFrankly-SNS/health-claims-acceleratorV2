@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Play, Clipboard, CheckCircle, AlertCircle, Cpu, Zap, RefreshCw } from "lucide-react";
+import { Play, Clipboard, CheckCircle, AlertCircle, Cpu, Zap, RefreshCw, FileText, ShieldCheck, ReceiptText, User, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 
 interface Claim {
   claim_id: string;
@@ -17,6 +17,28 @@ interface AgentNodeState {
   message: string;
 }
 
+interface ClaimDetails {
+  claim?: Record<string, string | null>;
+  clinical?: Record<string, string | null>;
+  bills?: Record<string, string | null>[];
+  policy?: Record<string, string | null>;
+  policy_members?: Record<string, string | null>[];
+  gold_decision?: any;
+  documents?: {
+    discharge_summary_available: boolean;
+    discharge_summary_text?: string | null;
+    hospital_bill_available: boolean;
+  };
+  failure_reason?: {
+    status: string;
+    error_detail: string;
+    cross_validation_status?: string;
+    member_validation_status?: string;
+    completeness_score?: number;
+    missing_fields?: string[];
+  } | null;
+}
+
 
 export default function Simulator() {
   const [claims, setClaims] = useState<Claim[]>([]);
@@ -24,6 +46,9 @@ export default function Simulator() {
   const [selectedClaimId, setSelectedClaimId] = useState<string>("");
   const [runMode, setRunMode] = useState<"queue" | "di">("queue");
   const [customClaimId, setCustomClaimId] = useState("");
+  const [claimDetails, setClaimDetails] = useState<ClaimDetails | null>(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+  const [detailsExpanded, setDetailsExpanded] = useState(true);
   
   // Running execution states
   const [running, setRunning] = useState(false);
@@ -47,13 +72,16 @@ export default function Simulator() {
   // Load claims queue
   useEffect(() => {
     fetch("/api/claims")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`API error: ${res.status}`);
+        return res.json();
+      })
       .then((data) => {
-        setClaims(data || []);
-        if (data && data.length > 0) {
-          if (runMode === "queue") {
-            setSelectedClaimId(data[0].claim_id);
-          }
+        // Guard: ensure data is an array before setting state
+        const safeData = Array.isArray(data) ? data : [];
+        setClaims(safeData);
+        if (safeData.length > 0 && runMode === "queue") {
+          setSelectedClaimId(safeData[0].claim_id);
         }
       })
       .catch((err) => console.error("Error loading claims queue:", err))
@@ -64,6 +92,22 @@ export default function Simulator() {
   useEffect(() => {
     terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [terminalLogs]);
+
+  // Fetch claim details whenever selected claim changes
+  const fetchDetails = (id: string) => {
+    if (!id) { setClaimDetails(null); return; }
+    setLoadingDetails(true);
+    fetch(`/api/claims/${id}/details`)
+      .then((r) => r.json())
+      .then((d) => setClaimDetails(d))
+      .catch(() => setClaimDetails(null))
+      .finally(() => setLoadingDetails(false));
+  };
+
+  useEffect(() => {
+    const id = runMode === "queue" ? selectedClaimId : customClaimId;
+    fetchDetails(id);
+  }, [selectedClaimId, customClaimId, runMode]);
 
   const updateNode = (id: string, updates: Partial<AgentNodeState>) => {
     setNodes((prev) =>
@@ -140,6 +184,9 @@ export default function Simulator() {
       log(`✗ SSE connection disconnected (Run finalized or server cold start).`);
       eventSource.close();
       setRunning(false);
+      // Reload claim details to show gold decision results
+      const id = runMode === "queue" ? selectedClaimId : customClaimId;
+      setTimeout(() => fetchDetails(id), 1500);
     };
   };
 
@@ -237,6 +284,35 @@ export default function Simulator() {
           )}
         </button>
       </div>
+
+      {/* Claim Details Panel */}
+      {(selectedClaimId || customClaimId) && (
+        <div className="glass rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+          <button
+            onClick={() => setDetailsExpanded((v) => !v)}
+            className="w-full flex items-center justify-between p-5 bg-slate-900/40 hover:bg-slate-800/40 transition-colors"
+          >
+            <span className="text-sm font-bold text-white flex items-center gap-2">
+              <FileText size={16} className="text-indigo-400" />
+              Claim Intelligence Brief — <span className="font-mono text-indigo-400">{runMode === "queue" ? selectedClaimId : customClaimId}</span>
+            </span>
+            {detailsExpanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+          </button>
+
+          {detailsExpanded && (
+            <div className="p-6">
+              {loadingDetails ? (
+                <div className="flex items-center gap-3 text-slate-400 text-sm py-4">
+                  <RefreshCw size={16} className="animate-spin text-indigo-400" />
+                  Loading claim data from Unity Catalog...
+                </div>
+              ) : !claimDetails ? (
+                <p className="text-slate-500 text-sm">No details available.</p>
+              ) : (<ClaimBrief details={claimDetails} />)}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Interactive Flowchart Visualizer */}
       <div className="glass p-8 rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
@@ -413,6 +489,253 @@ export default function Simulator() {
             {!finalState && (
               <div className="text-center py-10 text-slate-600 text-xs italic">
                 Payload data will be rendered as agents complete execution.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+// ---------------------------------------------------------------------------
+// ClaimBrief — inline claim context panel shown before/after adjudication
+// ---------------------------------------------------------------------------
+function KV({ label, value, highlight }: { label: string; value: string | null | undefined; highlight?: string }) {
+  const colorClass = highlight === "money" ? "text-amber-400 font-bold"
+    : highlight === "icd" ? "text-sky-400 font-bold"
+    : highlight === "fraud" ? "text-red-400 font-bold"
+    : highlight === "ok" ? "text-emerald-400 font-bold"
+    : highlight === "tier" ? "text-indigo-400 font-bold"
+    : "text-slate-200";
+  return (
+    <div className="flex justify-between gap-2 py-0.5 border-b border-slate-800/40 last:border-0">
+      <span className="text-slate-500 capitalize shrink-0 text-[11px]">{label.replace(/_/g, " ")}</span>
+      <span className={`font-mono text-right truncate max-w-[160px] text-[11px] ${colorClass}`} title={value ?? ""}>{value ?? "—"}</span>
+    </div>
+  );
+}
+
+function ClaimBrief({ details }: { details: ClaimDetails }) {
+  const gd = details.gold_decision;
+  const fr = details.failure_reason;
+
+  return (
+    <div className="space-y-5">
+      {/* Row 1: Claim Submission | Policy | Members & Bills */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        {/* Claim Submission + Clinical */}
+        <div className="space-y-2">
+          <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1.5">
+            <ReceiptText size={12} /> Claim Submission
+          </h4>
+          <div className="bg-slate-950/60 rounded-xl border border-slate-800 p-4 space-y-0.5">
+            {details.claim && Object.entries(details.claim)
+              .filter(([k]) => !["claim_form_metadata", "ingested_at"].includes(k))
+              .map(([k, v]) => (
+                <KV key={k} label={k} value={k === "claimed_amount" && v ? `₹${Number(v).toLocaleString()}` : v}
+                  highlight={k === "claimed_amount" ? "money" : k === "is_fraud" ? (v === "1" ? "fraud" : "ok") : undefined} />
+              ))}
+            {details.clinical && (
+              <>
+                <div className="pt-2 pb-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Clinical Record</div>
+                {Object.entries(details.clinical)
+                  .filter(([k]) => !["ingested_at", "record_seq"].includes(k))
+                  .map(([k, v]) => (
+                    <KV key={k} label={k} value={v} highlight={k === "diagnosis_icd" ? "icd" : undefined} />
+                  ))}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Policy */}
+        <div className="space-y-2">
+          <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1.5">
+            <ShieldCheck size={12} /> Policy & Coverage
+          </h4>
+          <div className="bg-slate-950/60 rounded-xl border border-slate-800 p-4 space-y-0.5">
+            {details.policy
+              ? Object.entries(details.policy).map(([k, v]) => (
+                  <KV key={k} label={k}
+                    value={(k === "total_sum_insured" || k === "premium_paid") && v ? `₹${Number(v).toLocaleString()}` : v}
+                    highlight={k === "total_sum_insured" || k === "premium_paid" ? "money"
+                      : k === "status" ? (v === "ACTIVE" ? "ok" : "fraud")
+                      : k === "plan_tier" ? "tier" : undefined} />
+                ))
+              : <p className="text-slate-500 italic text-xs">Policy not found</p>}
+          </div>
+        </div>
+
+        {/* Members + Bills */}
+        <div className="space-y-2">
+          <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1.5">
+            <User size={12} /> Members & Bill Lines
+          </h4>
+          <div className="bg-slate-950/60 rounded-xl border border-slate-800 p-4 space-y-2 text-xs">
+            {details.policy_members?.map((m, i) => (
+              <div key={i} className="bg-slate-900/60 rounded-lg p-2.5 border border-slate-800/60">
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-white text-[11px]">{m.member_name ?? m.member_id}</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 font-bold">{m.relationship_to_primary}</span>
+                </div>
+                <div className="text-slate-500 text-[10px] mt-0.5">{m.coverage_start_date} → {m.coverage_end_date}</div>
+              </div>
+            ))}
+            {details.bills && details.bills.length > 0 && (
+              <>
+                <div className="pt-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-t border-slate-800">
+                  Bill Lines ({details.bills.length})
+                </div>
+                <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
+                  {details.bills.map((b, i) => (
+                    <div key={i} className="flex justify-between text-[11px] bg-slate-950/40 rounded p-1.5">
+                      <span className="text-slate-400 truncate max-w-[130px]">{b.normalized_expense_type ?? b.raw_expense_label ?? "—"}</span>
+                      <span className="text-amber-400 font-mono font-bold shrink-0">₹{Number(b.amount ?? 0).toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-between font-bold text-xs pt-1.5 border-t border-slate-800">
+                  <span className="text-slate-400">Total Billed</span>
+                  <span className="text-amber-400 font-mono">
+                    ₹{details.bills.reduce((s, b) => s + Number(b.amount ?? 0), 0).toLocaleString()}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Row 2: Discharge Summary | AI Decision */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+        {/* Discharge Summary */}
+        <div className="space-y-2">
+          <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+            <FileText size={12} /> Discharge Summary
+            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${details.documents?.discharge_summary_available ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"}`}>
+              {details.documents?.discharge_summary_available ? "FOUND" : "NOT IN VOLUME"}
+            </span>
+          </h4>
+          <div className="bg-slate-950/60 rounded-xl border border-slate-800 overflow-hidden">
+            {details.documents?.discharge_summary_text ? (
+              <pre className="text-[11px] text-slate-300 leading-relaxed p-4 max-h-80 overflow-y-auto whitespace-pre-wrap font-mono">
+                {details.documents.discharge_summary_text}
+              </pre>
+            ) : (
+              <div className="p-4 text-slate-500 text-xs italic flex items-start gap-2">
+                <AlertCircle size={13} className="text-amber-400 shrink-0 mt-0.5" />
+                <span>
+                  Discharge summary not found in deployed bundle. Upload to{" "}
+                  <code className="text-amber-400">/Volumes/health_claims_dev/claims/raw_documents/discharge-summaries/</code>{" "}
+                  to enable Agent 1 document extraction.
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* AI Decision Results */}
+        <div className="space-y-2">
+          <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1.5">
+            <AlertTriangle size={12} /> AI Decision Results
+          </h4>
+          <div className="bg-slate-950/60 rounded-xl border border-slate-800 p-4 space-y-3 text-xs">
+            {gd ? (
+              <>
+                {/* Status banner */}
+                <div className={`rounded-lg p-3 border ${gd.pipeline_status === "COMPLETED" ? "bg-emerald-950/20 border-emerald-500/20" : "bg-red-950/20 border-red-500/20"}`}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-bold text-white text-xs">Pipeline Status</span>
+                    <span className={`text-[11px] font-bold ${gd.pipeline_status === "COMPLETED" ? "text-emerald-400" : "text-red-400"}`}>{gd.pipeline_status}</span>
+                  </div>
+                  {gd.adjuster_allocation && (
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-slate-400">Routed To</span>
+                      <span className="text-indigo-400 font-bold">{gd.adjuster_allocation}</span>
+                    </div>
+                  )}
+                  {gd.routing_reason && <div className="text-slate-500 text-[10px] mt-1 italic">{gd.routing_reason}</div>}
+                </div>
+
+                {/* Agent result cards */}
+                <div className="grid grid-cols-2 gap-2">
+                  {gd.fraud && (
+                    <div className="bg-slate-900/60 rounded-lg p-3 border border-slate-800 space-y-1">
+                      <div className="text-[10px] font-bold text-slate-500 uppercase">Fraud Score</div>
+                      <div className={`text-xl font-bold font-mono ${gd.fraud.fraud_score > 0.6 ? "text-red-400" : gd.fraud.fraud_score > 0.3 ? "text-amber-400" : "text-emerald-400"}`}>
+                        {Math.round((gd.fraud.fraud_score ?? 0) * 100)}%
+                      </div>
+                      <div className="text-[10px] text-slate-400">{gd.fraud.confidence} risk</div>
+                      {gd.fraud.fraud_signals?.length > 0 && (
+                        <div className="text-[10px] text-red-400 leading-relaxed">⚠ {gd.fraud.fraud_signals.join(" • ")}</div>
+                      )}
+                      {gd.fraud.reasoning && (
+                        <div className="text-[10px] text-slate-500 italic leading-relaxed mt-1 border-t border-slate-800 pt-1">{gd.fraud.reasoning}</div>
+                      )}
+                    </div>
+                  )}
+                  {gd.coverage && (
+                    <div className="bg-slate-900/60 rounded-lg p-3 border border-slate-800 space-y-1">
+                      <div className="text-[10px] font-bold text-slate-500 uppercase">Coverage</div>
+                      <div className={`text-sm font-bold ${gd.coverage.coverage_status === "COVERED" ? "text-emerald-400" : gd.coverage.coverage_status === "EXCLUDED" ? "text-red-400" : "text-amber-400"}`}>
+                        {gd.coverage.coverage_status}
+                      </div>
+                      {gd.coverage.coverage_amount_estimate != null && (
+                        <div className="text-[11px] text-slate-300 font-mono">Est. ₹{Number(gd.coverage.coverage_amount_estimate).toLocaleString()}</div>
+                      )}
+                      {gd.coverage.exclusions_triggered?.length > 0 && (
+                        <div className="text-[10px] text-red-400">{gd.coverage.exclusions_triggered.join(", ")}</div>
+                      )}
+                      {gd.coverage.notes && (
+                        <div className="text-[10px] text-slate-500 italic leading-relaxed mt-1 border-t border-slate-800 pt-1">{gd.coverage.notes}</div>
+                      )}
+                    </div>
+                  )}
+                  {gd.reserve && (
+                    <div className="bg-slate-900/60 rounded-lg p-3 border border-slate-800 space-y-1 col-span-2">
+                      <div className="text-[10px] font-bold text-slate-500 uppercase">Reserve Estimate</div>
+                      <div className="flex items-end gap-3">
+                        <span className="text-xl font-bold font-mono text-amber-400">
+                          ₹{Number(gd.reserve.initial_reserve_amount ?? 0).toLocaleString()}
+                        </span>
+                        {gd.reserve.confidence_interval && (
+                          <span className="text-[10px] text-slate-400 pb-0.5">
+                            P10: ₹{Number(gd.reserve.confidence_interval.P10 ?? 0).toLocaleString()} — P90: ₹{Number(gd.reserve.confidence_interval.P90 ?? 0).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                      {gd.reserve.reasoning && <div className="text-[10px] text-slate-400 italic leading-relaxed">{gd.reserve.reasoning}</div>}
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="text-slate-500 text-xs italic py-6 text-center">
+                No AI decision yet — press "Run Agent Adjudication" to process this claim.
+              </div>
+            )}
+
+            {/* Failure reason */}
+            {fr && (
+              <div className="bg-red-950/20 border border-red-500/20 rounded-lg p-3 space-y-2">
+                <div className="text-[10px] font-bold text-red-400 uppercase tracking-wider flex items-center gap-1">
+                  <AlertCircle size={11} /> Why It Failed
+                </div>
+                <p className="text-red-300 leading-relaxed text-[11px]">{fr.error_detail}</p>
+                {fr.missing_fields && fr.missing_fields.length > 0 && (
+                  <div className="text-[10px] text-slate-400">
+                    Missing fields: <span className="text-amber-400">{fr.missing_fields.join(", ")}</span>
+                  </div>
+                )}
+                {fr.completeness_score != null && (
+                  <div className="text-[10px] text-slate-400">
+                    Completeness: <span className="text-red-400 font-bold">{Math.round((fr.completeness_score ?? 0) * 100)}%</span>
+                  </div>
+                )}
               </div>
             )}
           </div>

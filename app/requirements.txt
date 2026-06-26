@@ -11,3 +11,6 @@ databricks-vectorsearch
 sentence-transformers
 scikit-learn
 python-dotenv
+PyPDF2
+pdfminer.six
+pypdf

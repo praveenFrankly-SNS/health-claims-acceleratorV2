@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: Government General Hospital Chennai
+Patient: Mohan Subramanian | Policy: POL-HLT-20072-T1
+Admitted: 2023-07-14 | Discharged: 2023-07-16
+
+Principal Diagnosis: Typhoid Fever (A01.0)
+Total Charges: 14827
+
+Physician: Dr. TT. Dhawan, MC-1041

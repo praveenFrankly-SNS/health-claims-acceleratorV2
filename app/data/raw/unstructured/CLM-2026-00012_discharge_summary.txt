@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Vinod Pandey
+Policy Number: POL-HLT-20024-T1
+Admission Date: 2023-08-09
+Discharge Date: 2023-08-12
+Hospital: Narayana Health Bangalore
+
+Diagnosis: Viral Pneumonia
+ICD-10 Code: J12.9
+
+Course in the Hospital:
+The patient presented with symptoms relating to Viral Pneumonia.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 38527
+
+Attending Physician: Dr. AB. Kohli (Reg No: MC-1048)

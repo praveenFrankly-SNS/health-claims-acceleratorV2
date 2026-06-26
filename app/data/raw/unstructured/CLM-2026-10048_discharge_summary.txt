@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Lakshmi Chatterjee
+Policy Number: POL-HLT-20034-T1
+Admission Date: 2023-10-05
+Discharge Date: 2023-10-15
+Hospital: Ruby Hall Clinic Pune
+
+Diagnosis: Typhoid Fever
+ICD-10 Code: A01.0
+
+Course in the Hospital:
+The patient presented with symptoms relating to Typhoid Fever.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 29091
+
+Attending Physician: Dr. X. Kapoor (Reg No: MC-1019)

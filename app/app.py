@@ -18,7 +18,13 @@ if repo_root not in sys.path:
 # Try to import databricks.connect for Serverless compute
 try:
     from databricks.connect import DatabricksSession
-    spark = DatabricksSession.builder.serverless().getOrCreate()
+    cluster_id = os.environ.get("DATABRICKS_CLUSTER_ID")
+    builder = DatabricksSession.builder
+    if cluster_id:
+        builder = builder.clusterId(cluster_id)
+    else:
+        builder = builder.serverless()
+    spark = builder.getOrCreate()
 except Exception as e:
     st.error("Could not initialize DatabricksSession. Are you running outside Databricks?")
     spark = None
@@ -130,7 +136,7 @@ with tab1:
                         # Agent 2
                         st.write("🕵️ Agent 2: Fraud Detection Scoring...")
                         try:
-                            claim_state = agent2_fraud(claim_state)
+                            claim_state = agent2_fraud(claim_state, spark=spark)
                             st.json(claim_state.get('fraud', {}))
                         except Exception as e:
                             st.error(f"Agent 2 Failed: {e}")
@@ -146,7 +152,7 @@ with tab1:
                         # Agent 4
                         st.write("💰 Agent 4: Reserve Prediction...")
                         try:
-                            claim_state = agent4_reserve(claim_state)
+                            claim_state = agent4_reserve(claim_state, spark=spark)
                             st.json(claim_state.get('reserve', {}))
                         except Exception as e:
                             st.error(f"Agent 4 Failed: {e}")

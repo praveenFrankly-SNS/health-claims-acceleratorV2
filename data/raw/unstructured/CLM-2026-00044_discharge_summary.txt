@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Rajan Sharma
+Policy Number: POL-HLT-20006-T1
+Admission Date: 2023-11-07
+Discharge Date: 2023-11-13
+Hospital: AIIMS New Delhi
+
+Diagnosis: Cataract Surgery
+ICD-10 Code: H25.9
+
+Course in the Hospital:
+The patient presented with symptoms relating to Cataract Surgery.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 36089
+
+Attending Physician: Dr. BC. Tandon (Reg No: MC-1049)

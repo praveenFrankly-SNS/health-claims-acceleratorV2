@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: Government General Hospital Chennai
+Patient: Mohan Mishra | Policy: POL-HLT-20016-T1
+Admitted: 2023-08-16 | Discharged: 2023-08-26
+
+Principal Diagnosis: Hernia Repair (K40.90)
+Total Charges: 45853
+
+Physician: Dr. EE. Tiwari, MC-1026

@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: Ruby Hall Clinic Pune
+Patient: Dinesh Singh | Policy: POL-HLT-20058-T1
+Admitted: 2023-09-17 | Discharged: 2023-09-19
+
+Principal Diagnosis: Knee Replacement (Z96.65)
+Total Charges: 300674
+
+Physician: Dr. QQ. Narayan, MC-1038

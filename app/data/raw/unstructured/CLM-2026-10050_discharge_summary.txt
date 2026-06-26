@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: Ruby Hall Clinic Pune
+Patient: Padma Verma | Policy: POL-HLT-20052-T1
+Admitted: 2023-10-10 | Discharged: 2023-10-12
+
+Principal Diagnosis: Typhoid Fever (A01.0)
+Total Charges: 70376
+
+Physician: Dr. L. Rao, MC-1008

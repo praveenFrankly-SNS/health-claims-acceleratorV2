@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Bhavani Joshi
+Policy Number: POL-HLT-20034-T1
+Admission Date: 2023-10-16
+Discharge Date: 2023-10-26
+Hospital: Fortis Healthcare Mumbai
+
+Diagnosis: Gallstone Surgery
+ICD-10 Code: K80.20
+
+Course in the Hospital:
+The patient presented with symptoms relating to Gallstone Surgery.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 73942
+
+Attending Physician: Dr. II. Deshpande (Reg No: MC-1030)

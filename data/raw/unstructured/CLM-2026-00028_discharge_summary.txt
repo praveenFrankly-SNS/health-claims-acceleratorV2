@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: Ruby Hall Clinic Pune
+Patient: Rajan Sharma | Policy: POL-HLT-20006-T1
+Admitted: 2023-10-01 | Discharged: 2023-10-03
+
+Principal Diagnosis: Cataract Surgery (H25.9)
+Total Charges: 48582
+
+Physician: Dr. CC. Mishra, MC-1024

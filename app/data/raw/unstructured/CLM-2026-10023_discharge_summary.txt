@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: Fortis Healthcare Mumbai
+
+PATIENT INFORMATION
+Name: Nandini Saxena
+Insurance ID: POL-HLT-20035-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-08-22
+Date of Discharge: 2023-08-23
+
+CLINICAL FINDINGS
+Diagnosis: Typhoid Fever
+ICD Reference: A01.0
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 16452 INR
+
+Signed: Dr. SS. Arora (MC-1040)

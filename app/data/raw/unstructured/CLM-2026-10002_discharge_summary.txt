@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: Narayana Health Bangalore
+Patient: Dinesh Patel | Policy: POL-HLT-20020-T1
+Admitted: 2023-07-10 | Discharged: 2023-07-18
+
+Principal Diagnosis: Viral Pneumonia (J12.9)
+Total Charges: 43427
+
+Physician: Dr. J. Banerjee, MC-1013

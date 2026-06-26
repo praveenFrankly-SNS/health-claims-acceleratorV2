@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: Medanta The Medicity Gurgaon
+Patient: Ganesh Hegde | Policy: POL-HLT-20032-T1
+Admitted: 2023-10-08 | Discharged: 2023-10-15
+
+Principal Diagnosis: Viral Pneumonia (J12.9)
+Total Charges: 46842
+
+Physician: Dr. F. Das, MC-1016

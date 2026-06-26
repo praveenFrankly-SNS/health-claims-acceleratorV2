@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Rajesh Banerjee
+Policy Number: POL-HLT-20013-T1
+Admission Date: 2023-10-28
+Discharge Date: 2023-11-03
+Hospital: Ruby Hall Clinic Pune
+
+Diagnosis: Fracture Treatment
+ICD-10 Code: S72.009A
+
+Course in the Hospital:
+The patient presented with symptoms relating to Fracture Treatment.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 83897
+
+Attending Physician: Dr. PP. Raman (Reg No: MC-1037)

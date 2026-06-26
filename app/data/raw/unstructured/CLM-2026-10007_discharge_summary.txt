@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: AIIMS New Delhi
+
+PATIENT INFORMATION
+Name: Vidya Verma
+Insurance ID: POL-HLT-20052-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-07-19
+Date of Discharge: 2023-07-22
+
+CLINICAL FINDINGS
+Diagnosis: Hernia Repair
+ICD Reference: K40.90
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 60970 INR
+
+Signed: Dr. B. Iyer (MC-1009)

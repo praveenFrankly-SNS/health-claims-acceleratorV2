@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Vinod Pandey
+Policy Number: POL-HLT-20024-T1
+Admission Date: 2023-11-08
+Discharge Date: 2023-11-09
+Hospital: Narayana Health Bangalore
+
+Diagnosis: Hernia Repair
+ICD-10 Code: K40.90
+
+Course in the Hospital:
+The patient presented with symptoms relating to Hernia Repair.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 39479
+
+Attending Physician: Dr. J. Banerjee (Reg No: MC-1013)

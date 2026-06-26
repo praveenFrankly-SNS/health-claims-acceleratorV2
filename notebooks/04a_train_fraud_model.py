@@ -36,19 +36,37 @@ except Exception:
 
 MODEL_NAME = f"{CATALOG_NAME}.{SCHEMA_NAME}.fraud_detection_xgboost"
 
-# Try to use Spark to get the data if in Databricks, otherwise fallback to local CSVs
+# Re-initialize Spark after restartPython() — the previous spark session is gone.
+# SparkSession.getOrCreate() returns the existing active session on Databricks.
+from pyspark.sql import SparkSession
+spark = SparkSession.builder.getOrCreate()
+
+# Load training data from silver_claims_history (the cumulative training table).
+# CSV fallback is ONLY for running this notebook locally outside Databricks.
 try:
     spark.sql(f"USE {CATALOG_NAME}.{SCHEMA_NAME}")
-    df_silver = spark.table("silver_claims").toPandas()
+    history_table = f"{CATALOG_NAME}.{SCHEMA_NAME}.silver_claims_history"
+    if spark.catalog.tableExists(history_table):
+        df_silver = spark.table(history_table).toPandas()
+        print(f"✓ Loaded {history_table}: {len(df_silver)} rows (cumulative training set)")
+    else:
+        print("WARNING: silver_claims_history not found — falling back to silver_claims.")
+        print("Run 02_silver_preparation_spark_sim first to build the history table.")
+        df_silver = spark.table(f"{CATALOG_NAME}.{SCHEMA_NAME}.silver_claims").toPandas()
+        print(f"  Loaded silver_claims: {len(df_silver)} rows")
 except Exception as e:
-    print(f"Running locally without Databricks Spark context: {e}")
-    # Fallback for local testing if needed
+    print(f"Spark table load failed: {e}")
+    print("Falling back to local CSV — training will use minimal data.")
     repo_root = "." if os.path.exists("./data") else ".."
-    df_silver = pd.read_csv(f"{repo_root}/data/raw/structured/claims.csv")
-    # Stub missing features for local run
-    df_silver['days_since_inception'] = 500
-    df_silver['amount_to_premium_ratio'] = df_silver['claimed_amount'] / 10000
+    csv_path = f"{repo_root}/data/raw/training/claim_submissions_training.csv"
+    if not os.path.exists(csv_path):
+        csv_path = f"{repo_root}/data/raw/structured/claim_submissions.csv"
+    df_silver = pd.read_csv(csv_path)
+    df_silver['days_since_inception'] = df_silver.get('days_since_inception', 500)
+    df_silver['amount_to_premium_ratio'] = df_silver.get('amount_to_premium_ratio',
+        df_silver['claimed_amount'] / 10000)
     df_silver['claim_velocity'] = 0
+    print(f"  Loaded CSV: {csv_path} ({len(df_silver)} rows)")
 
 # COMMAND ----------
 

@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: Apollo Hospital Coimbatore
+
+PATIENT INFORMATION
+Name: Bhavani Deshpande
+Insurance ID: POL-HLT-20053-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-09-29
+Date of Discharge: 2023-10-06
+
+CLINICAL FINDINGS
+Diagnosis: Viral Pneumonia
+ICD Reference: J12.9
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 63340 INR
+
+Signed: Dr. N. Verma (MC-1006)

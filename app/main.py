@@ -13,8 +13,11 @@ from sse_starlette.sse import EventSourceResponse
 # Ensure repository root is in python path
 app_dir = os.path.dirname(os.path.abspath(__file__))
 repo_root = os.path.abspath(os.path.join(app_dir, ".."))
-if repo_root not in sys.path:
-    sys.path.append(repo_root)
+
+# Add both app_dir (contains src/ and config/ copies) and repo_root to sys.path
+for p in [app_dir, repo_root]:
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
 # Load environment variables from .env in repository root
 try:
@@ -43,7 +46,13 @@ audit_schema = "audit"
 spark = None
 try:
     from databricks.connect import DatabricksSession
-    spark = DatabricksSession.builder.getOrCreate()
+    cluster_id = os.environ.get("DATABRICKS_CLUSTER_ID")
+    builder = DatabricksSession.builder
+    if cluster_id:
+        builder = builder.clusterId(cluster_id)
+    else:
+        builder = builder.serverless()
+    spark = builder.getOrCreate()
     print("✓ Successfully initialized DatabricksSession")
 except Exception as e:
     print(f"Notice: Databricks Connect could not initialize: {e}")
@@ -54,12 +63,7 @@ except Exception as e:
     except Exception as local_e:
         print(f"Error: Local Spark Session initialization failed: {local_e}")
 
-# Ensure the database context is set
-if spark:
-    try:
-        spark.sql(f"USE {catalog}.{schema}")
-    except Exception as e:
-        print(f"Warning: Could not set default schema to {catalog}.{schema}: {e}")
+# Note: Do not USE catalog.schema at startup — tables are referenced with fully-qualified names
 
 # ---------------------------------------------------------------------------
 # Pydantic Schemas
@@ -270,20 +274,28 @@ def get_claims():
         if not spark.catalog.tableExists(silver_table):
             return []
         
+        # Deduplicate by claim_id — bronze_claim_submissions uses append mode so
+        # re-runs can produce duplicate silver rows. Always take the latest ingested_at.
+        from pyspark.sql.window import Window
+        from pyspark.sql.functions import row_number, desc, col
+
+        w = Window.partitionBy("claim_id").orderBy(desc("ingested_at"))
+        df_silver = (spark.table(silver_table)
+                     .withColumn("_rn", row_number().over(w))
+                     .filter(col("_rn") == 1)
+                     .drop("_rn"))
+
         # Check if already processed in gold_claim_decisions
         gold_table = f"{catalog}.{schema}.gold_claim_decisions"
-        df_silver = spark.table(silver_table)
         processed_ids = set()
         
         if spark.catalog.tableExists(gold_table):
             df_gold = spark.table(gold_table).select("claim_id")
-            # Query pending claims first (left_anti join)
             df_pending = df_silver.join(df_gold, on="claim_id", how="left_anti").orderBy("claim_id").limit(100).toPandas()
             
             if len(df_pending) > 0:
                 df = df_pending
             else:
-                # If no pending claims remain, show processed claims
                 df = df_silver.orderBy("claim_id").limit(100).toPandas()
                 
             df_gold_all = df_gold.toPandas()
@@ -292,22 +304,294 @@ def get_claims():
             df = df_silver.orderBy("claim_id").limit(100).toPandas()
             
         claims = []
+        seen_ids = set()  # extra guard against any remaining dupes in pandas
         for _, row in df.iterrows():
             cid = row["claim_id"]
+            if cid in seen_ids:
+                continue
+            seen_ids.add(cid)
+
+            def safe_int(val, default=0):
+                try:
+                    if val is None or (isinstance(val, float) and (val != val)):
+                        return default
+                    return int(val)
+                except (ValueError, TypeError):
+                    return default
+
+            def safe_float(val, default=0.0):
+                try:
+                    if val is None or (isinstance(val, float) and (val != val)):
+                        return default
+                    return float(val)
+                except (ValueError, TypeError):
+                    return default
+
             claims.append({
                 "claim_id": cid,
                 "policy_number": row.get("policy_number"),
                 "claimant_id": row.get("claimant_id"),
                 "date_of_loss": row.get("date_of_loss"),
-                "claimed_amount": int(row.get("claimed_amount", 0)),
-                "days_since_inception": int(row.get("days_since_inception", 500)),
-                "claim_velocity": int(row.get("claim_velocity", 0)),
-                "amount_to_premium_ratio": float(row.get("amount_to_premium_ratio", 0.0)),
+                "claimed_amount": safe_int(row.get("claimed_amount"), 0),
+                "days_since_inception": safe_int(row.get("days_since_inception"), 500),
+                "claim_velocity": safe_int(row.get("claim_velocity"), 0),
+                "amount_to_premium_ratio": safe_float(row.get("amount_to_premium_ratio"), 0.0),
                 "status": "PROCESSED" if cid in processed_ids else "PENDING"
             })
         return claims
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error loading claims queue: {str(e)}")
+        print(f"Error loading claims queue: {str(e)}")
+        return []
+
+@app.get("/api/claims/{claim_id}/details")
+def get_claim_details(claim_id: str):
+    """
+    Returns full claim context for a given claim_id:
+    - Claim submission info, clinical record, bills, policy info,
+    - Gold decision payload (if already processed)
+    - Document availability flags and failure reason explanation
+    """
+    if not spark:
+        raise HTTPException(status_code=503, detail="Spark not available")
+
+    result: dict = {}
+
+    # --- Claim submission ---
+    try:
+        rows = spark.table(f"{catalog}.{schema}.bronze_claim_submissions") \
+            .filter(f"claim_id = '{claim_id}'").limit(1).collect()
+        if rows:
+            r = rows[0].asDict()
+            result["claim"] = {k: str(v) if v is not None else None
+                               for k, v in r.items() if k not in ("source",)}
+    except Exception as e:
+        result["claim"] = {"error": str(e)}
+
+    # --- Clinical record ---
+    try:
+        rows = spark.table(f"{catalog}.{schema}.bronze_clinical_records") \
+            .filter(f"claim_id = '{claim_id}'").limit(1).collect()
+        if rows:
+            result["clinical"] = {k: str(v) if v is not None else None
+                                  for k, v in rows[0].asDict().items() if k not in ("source",)}
+    except Exception as e:
+        result["clinical"] = {"error": str(e)}
+
+    # --- Bills ---
+    try:
+        rows = spark.table(f"{catalog}.{schema}.bronze_claim_bills") \
+            .filter(f"claim_id = '{claim_id}'").collect()
+        result["bills"] = [{k: str(v) if v is not None else None
+                            for k, v in r.asDict().items() if k not in ("source",)} for r in rows]
+    except Exception as e:
+        result["bills"] = []
+
+    # --- Policy info + members ---
+    try:
+        sub_pn = (result.get("claim") or {}).get("policy_number")
+        if sub_pn:
+            rows = spark.table(f"{catalog}.{schema}.policy_master") \
+                .filter(f"policy_number = '{sub_pn}'").limit(1).collect()
+            if rows:
+                result["policy"] = {k: str(v) if v is not None else None
+                                    for k, v in rows[0].asDict().items()}
+            mem_rows = spark.table(f"{catalog}.{schema}.policy_members") \
+                .filter(f"policy_number = '{sub_pn}'").collect()
+            result["policy_members"] = [{k: str(v) if v is not None else None
+                                         for k, v in r.asDict().items()} for r in mem_rows]
+    except Exception as e:
+        result["policy"] = {"error": str(e)}
+        result["policy_members"] = []
+
+    # --- Gold decision (if exists) ---
+    try:
+        gold_table = f"{catalog}.{schema}.gold_claim_decisions"
+        if spark.catalog.tableExists(gold_table):
+            rows = spark.table(gold_table).filter(f"claim_id = '{claim_id}'").limit(1).collect()
+            if rows:
+                try:
+                    result["gold_decision"] = json.loads(rows[0]["payload"])
+                except Exception:
+                    result["gold_decision"] = None
+    except Exception:
+        result["gold_decision"] = None
+
+    # --- Document availability + discharge summary text ---
+    # Try UC Volume first, then fall back to the deployed workspace bundle files
+    # Note: on Databricks Apps, __file__ resolves to a /Workspace/ path.
+    # os.path.exists() works on /Workspace/ paths in Databricks Runtime.
+    # We also try the standard workspace bundle location as a fallback.
+    bundle_base = "/Workspace/Users/praveen.v.ihub@snsgroups.com/.bundle/health-claims-accelerator/default/files"
+    raw_docs_vol = os.environ.get("RAW_DOCUMENTS_VOLUME_PATH", f"/Volumes/{catalog}/{schema}/raw_documents")
+    discharge_paths = [
+        # UC Volume root
+        f"{raw_docs_vol}/{claim_id}_discharge_summary.pdf",
+        f"{raw_docs_vol}/{claim_id}_discharge_summary.txt",
+        # UC Volume subdirectories — try both pdf and txt (new claims have pdf, old have txt)
+        f"{raw_docs_vol}/discharge-summaries/{claim_id}_discharge_summary.pdf",
+        f"{raw_docs_vol}/discharge-summaries/{claim_id}_discharge_summary.txt",
+        f"{raw_docs_vol}/discharge summaries/{claim_id}_discharge_summary.pdf",
+        f"{raw_docs_vol}/discharge summaries/{claim_id}_discharge_summary.txt",
+        # Bundle workspace fallback
+        f"{bundle_base}/data/raw/unstructured/{claim_id}_discharge_summary.txt",
+        f"{bundle_base}/data/raw/unstructured/{claim_id}_discharge_summary.pdf",
+        os.path.join(app_dir, "data", "raw", "unstructured", f"{claim_id}_discharge_summary.txt"),
+        os.path.join(app_dir, "data", "raw", "unstructured", f"{claim_id}_discharge_summary.pdf"),
+        os.path.join(repo_root, "data", "raw", "unstructured", f"{claim_id}_discharge_summary.txt"),
+        os.path.join(repo_root, "data", "raw", "unstructured", f"{claim_id}_discharge_summary.pdf"),
+    ]
+    bill_paths = [
+        # UC Volume paths
+        f"{raw_docs_vol}/{claim_id}_hospital_bill.pdf",
+        f"{raw_docs_vol}/{claim_id}_payment_receipt.jpg",
+        f"{raw_docs_vol}/hospital-bills/{claim_id}_hospital_bill.pdf",
+        f"{raw_docs_vol}/hospital-bills/{claim_id}_payment_receipt.jpg",
+        f"{raw_docs_vol}/hospital bills/{claim_id}_hospital_bill.pdf",
+        f"{raw_docs_vol}/hospital bills/{claim_id}_payment_receipt.jpg",
+        # Local container fallbacks
+        os.path.join(app_dir, "data", "raw", "bills", f"{claim_id}_hospital_bill.pdf"),
+        os.path.join(app_dir, "data", "raw", "bills", f"{claim_id}_payment_receipt.jpg"),
+        os.path.join(repo_root, "data", "raw", "bills", f"{claim_id}_hospital_bill.pdf"),
+        os.path.join(repo_root, "data", "raw", "bills", f"{claim_id}_payment_receipt.jpg"),
+    ]
+
+    discharge_text = None
+    discharge_found_path = None
+    for p in discharge_paths:
+        try:
+            # Try open() directly — don't rely on os.path.exists() 
+            # UC Volume subdirectory may not appear to os.path.exists() but files are still readable
+            if p.endswith(".txt"):
+                with open(p, "r", encoding="utf-8", errors="replace") as f:
+                    discharge_text = f.read()
+                if discharge_text.strip():
+                    discharge_found_path = p
+                    break
+            elif p.endswith(".pdf"):
+                with open(p, "rb") as f:
+                    raw = f.read()
+                try:
+                    import pypdf
+                    from io import BytesIO
+                    reader = pypdf.PdfReader(BytesIO(raw))
+                    discharge_text = "\n".join(pg.extract_text() or "" for pg in reader.pages)
+                except Exception:
+                    try:
+                        import PyPDF2
+                        from io import BytesIO
+                        reader = PyPDF2.PdfReader(BytesIO(raw))
+                        discharge_text = "\n".join(pg.extract_text() or "" for pg in reader.pages)
+                    except Exception:
+                        discharge_text = f"[PDF found: {p}]"
+                discharge_found_path = p
+                break
+        except (FileNotFoundError, OSError):
+            continue
+        except Exception:
+            continue
+
+    # Check hospital bill — try open() directly, same as discharge (os.path.exists fails on UC Volume subdirs)
+    hospital_bill_available = False
+    for p in bill_paths:
+        try:
+            with open(p, "rb") as f:
+                _ = f.read(1)  # just check it's readable
+            hospital_bill_available = True
+            break
+        except (FileNotFoundError, OSError):
+            continue
+        except Exception:
+            continue
+
+    result["documents"] = {
+        "discharge_summary_available": discharge_text is not None,
+        "discharge_summary_text": discharge_text,
+        "discharge_found_path": discharge_found_path,
+        "hospital_bill_available": hospital_bill_available,
+    }
+
+    # --- Why it failed ---
+    failure_reason = None
+    gd = result.get("gold_decision")
+    if gd:
+        status = gd.get("pipeline_status", "")
+        if status == "HALTED_INCOMPLETE":
+            member_val = gd.get("member_validation", {}) or {}
+            extracted = gd.get("extracted_data", {}) or {}
+            failure_reason = {
+                "status": "HALTED_INCOMPLETE",
+                "cross_validation_status": gd.get("cross_validation_status", "UNKNOWN"),
+                "member_validation_status": member_val.get("status", "UNKNOWN"),
+                "error_detail": member_val.get("error_detail") or extracted.get(
+                    "cross_validation_error",
+                    "Document extraction returned 0% completeness. Discharge summary not found in volume or LLM extraction failed."
+                ),
+                "completeness_score": gd.get("completeness_score", 0),
+                "missing_fields": gd.get("missing_fields", []),
+            }
+    else:
+        if not result["documents"]["discharge_summary_available"]:
+            vol_dir = "discharge summaries" if os.path.exists(f"/Volumes/{catalog}/{schema}/raw_documents/discharge summaries") else "discharge-summaries"
+            failure_reason = {
+                "status": "DOCS_MISSING",
+                "error_detail": (
+                    f"Discharge summary not found in UC Volume folder: '{vol_dir}'. "
+                    "Please run the Bronze Ingestion Job in Databricks (or 01_bronze_ingestion.py) to sync files from Supabase Storage into the Volume."
+                ),
+            }
+    result["failure_reason"] = failure_reason
+
+    return result
+
+
+@app.get("/api/debug/paths")
+def debug_paths():
+    """Debug endpoint — shows resolved paths and which discharge summary files exist."""
+    bundle_base = "/Workspace/Users/praveen.v.ihub@snsgroups.com/.bundle/health-claims-accelerator/default/files"
+    
+    # Test with a current inference claim ID
+    test_claim = "CLM-2026-00433"
+    raw_docs_vol = os.environ.get("RAW_DOCUMENTS_VOLUME_PATH", f"/Volumes/{catalog}/{schema}/raw_documents")
+    vol_discharge_hyphen = f"{raw_docs_vol}/discharge-summaries"
+    vol_discharge_space = f"{raw_docs_vol}/discharge summaries"
+    
+    paths_to_check = {
+        "pdf_in_volume_root": f"{raw_docs_vol}/{test_claim}_discharge_summary.pdf",
+        "txt_in_volume_root": f"{raw_docs_vol}/{test_claim}_discharge_summary.txt",
+        "pdf_in_volume_hyphen": f"{vol_discharge_hyphen}/{test_claim}_discharge_summary.pdf",
+        "txt_in_volume_hyphen": f"{vol_discharge_hyphen}/{test_claim}_discharge_summary.txt",
+        "pdf_in_volume_space": f"{vol_discharge_space}/{test_claim}_discharge_summary.pdf",
+        "txt_in_volume_space": f"{vol_discharge_space}/{test_claim}_discharge_summary.txt",
+        "bundle_txt": f"{bundle_base}/data/raw/unstructured/{test_claim}_discharge_summary.txt",
+    }
+    
+    # Also list what's actually in the volume directory
+    volume_files = []
+    vol_discharge = raw_docs_vol
+    try:
+        if os.path.exists(raw_docs_vol):
+            all_files = os.listdir(raw_docs_vol)
+            volume_files = sorted(all_files)
+        else:
+            volume_files = [f"DIRECTORY DOES NOT EXIST: {raw_docs_vol}"]
+    except Exception as e:
+        volume_files = [f"ERROR listing directory: {e}"]
+    
+    return {
+        "app_dir": app_dir,
+        "repo_root": repo_root,
+        "cwd": os.getcwd(),
+        "catalog": catalog,
+        "schema": schema,
+        "test_claim": test_claim,
+        "path_exists": {k: os.path.exists(v) for k, v in paths_to_check.items()},
+        "paths_checked": paths_to_check,
+        "volume_discharge_dir": vol_discharge,
+        "volume_dir_exists": os.path.exists(vol_discharge),
+        "files_in_volume": volume_files[:30],  # first 30 files
+        "total_files_in_volume": len(volume_files),
+    }
+
 
 @app.post("/api/decide")
 def submit_decision(req: DecisionRequest):
@@ -383,7 +667,8 @@ def get_gold_explorer():
             })
         return results
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Error loading gold explorer: {str(e)}")
+        return []
 
 @app.get("/api/analytics")
 def get_analytics():
@@ -433,7 +718,7 @@ async def stream_adjudication(claim_id: str):
         
         try:
             # Load static details from Spark
-            sub_rows = spark.table("bronze_claim_submissions").filter(f"claim_id = '{claim_id}'").collect()
+            sub_rows = spark.table(f"{catalog}.{schema}.bronze_claim_submissions").filter(f"claim_id = '{claim_id}'").collect()
             if not sub_rows:
                 yield {
                     "event": "message",
@@ -442,7 +727,7 @@ async def stream_adjudication(claim_id: str):
                 await asyncio.sleep(0.5)
                 try:
                     ingest_new_claim_from_supabase(claim_id)
-                    sub_rows = spark.table("bronze_claim_submissions").filter(f"claim_id = '{claim_id}'").collect()
+                    sub_rows = spark.table(f"{catalog}.{schema}.bronze_claim_submissions").filter(f"claim_id = '{claim_id}'").collect()
                 except Exception as ingest_err:
                     raise ValueError(f"Real-time ingestion failed for claim {claim_id}: {ingest_err}")
                 
@@ -458,18 +743,31 @@ async def stream_adjudication(claim_id: str):
             claim_sub = sub_rows[0].asDict()
             
             # Load features
-            features_rows = spark.table("silver_claims").filter(f"claim_id = '{claim_id}'").collect()
+            features_rows = spark.table(f"{catalog}.{schema}.silver_claims").filter(f"claim_id = '{claim_id}'").collect()
             claim_features = features_rows[0].asDict() if features_rows else {}
-            
+
+            # Safe cast helpers — Spark Row values can be None even when key exists
+            def _int(val, default=0):
+                try:
+                    return int(val) if val is not None and val == val else default
+                except (TypeError, ValueError):
+                    return default
+
+            def _float(val, default=0.0):
+                try:
+                    return float(val) if val is not None and val == val else default
+                except (TypeError, ValueError):
+                    return default
+
             claim_state = {
                 "claim_id": claim_id,
                 "policy_number": claim_sub.get("policy_number"),
                 "claimant_id": claim_sub.get("claimant_id"),
                 "date_of_loss": claim_sub.get("date_of_loss"),
-                "claimed_amount": claim_sub.get("claimed_amount"),
-                "days_since_inception": int(claim_features.get("days_since_inception", 500)),
-                "claim_velocity": int(claim_features.get("claim_velocity", 0)),
-                "amount_to_premium_ratio": float(claim_features.get("amount_to_premium_ratio", 0.0)),
+                "claimed_amount": _int(claim_sub.get("claimed_amount"), 0),
+                "days_since_inception": _int(claim_features.get("days_since_inception"), 500),
+                "claim_velocity": _int(claim_features.get("claim_velocity"), 0),
+                "amount_to_premium_ratio": _float(claim_features.get("amount_to_premium_ratio"), 0.0),
                 "pipeline_status": "RUNNING"
             }
             
@@ -534,7 +832,7 @@ async def stream_adjudication(claim_id: str):
         }
         try:
             from src.agents.fraud import agent2_fraud
-            claim_state = agent2_fraud(claim_state)
+            claim_state = agent2_fraud(claim_state, spark=spark)
             yield {
                 "event": "message",
                 "data": json.dumps({
@@ -586,7 +884,7 @@ async def stream_adjudication(claim_id: str):
         }
         try:
             from src.agents.reserve import agent4_reserve
-            claim_state = agent4_reserve(claim_state)
+            claim_state = agent4_reserve(claim_state, spark=spark)
             yield {
                 "event": "message",
                 "data": json.dumps({
@@ -650,6 +948,53 @@ async def stream_adjudication(claim_id: str):
             }
             
     return EventSourceResponse(event_generator())
+
+
+@app.get("/api/debug/reset_gold")
+def reset_gold_endpoint():
+    """Truncates the gold decisions table to bring back all claims into the pending queue."""
+    if not spark:
+        return {"error": "Spark not available"}
+    try:
+        table_name = f"{catalog}.{schema}.gold_claim_decisions"
+        spark.sql(f"TRUNCATE TABLE {table_name}")
+        return {"status": "SUCCESS", "message": f"Table {table_name} truncated successfully!"}
+    except Exception as e:
+        # Fallback to drop if truncate fails
+        try:
+            spark.sql(f"DROP TABLE IF EXISTS {table_name}")
+            return {"status": "SUCCESS", "message": f"Table {table_name} dropped successfully!"}
+        except Exception as e2:
+            return {"status": "FAILED", "error": str(e), "drop_error": str(e2)}
+
+
+@app.get("/api/debug/list_volume")
+def debug_list_volume():
+    """Endpoint to inspect what volume directories and files are visible to the FastAPI container."""
+    try:
+        vol_path = os.environ.get("RAW_DOCUMENTS_VOLUME_PATH", f"/Volumes/{catalog}/{schema}/raw_documents")
+        res = {
+            "vol_path_env_var": os.environ.get("RAW_DOCUMENTS_VOLUME_PATH"),
+            "vol_path": vol_path,
+            "exists": os.path.exists(vol_path),
+            "is_dir": os.path.isdir(vol_path) if os.path.exists(vol_path) else False,
+        }
+        if os.path.exists(vol_path):
+            res["contents"] = os.listdir(vol_path)
+            # Try listing subdirectories
+            subdirs = {}
+            for item in os.listdir(vol_path):
+                item_path = os.path.join(vol_path, item)
+                if os.path.isdir(item_path):
+                    try:
+                        subdirs[item] = os.listdir(item_path)[:30] # list first 30 files
+                    except Exception as sub_e:
+                        subdirs[item] = f"Error listing: {sub_e}"
+            res["subdirs"] = subdirs
+        return res
+    except Exception as e:
+        return {"error": str(e)}
+
 
 # ---------------------------------------------------------------------------
 # Static Assets Serving

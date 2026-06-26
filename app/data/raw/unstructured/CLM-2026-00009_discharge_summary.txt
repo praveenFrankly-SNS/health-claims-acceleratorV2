@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Uma Pandey
+Policy Number: POL-HLT-20011-T1
+Admission Date: 2023-07-28
+Discharge Date: 2023-07-29
+Hospital: Medanta The Medicity Gurgaon
+
+Diagnosis: Typhoid Fever
+ICD-10 Code: A01.0
+
+Course in the Hospital:
+The patient presented with symptoms relating to Typhoid Fever.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 14173
+
+Attending Physician: Dr. KK. Seshadri (Reg No: MC-1032)

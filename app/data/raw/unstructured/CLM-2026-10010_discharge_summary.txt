@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: City Clinic Chennai
+Patient: Lakshmi Verma | Policy: POL-HLT-20052-T1
+Admitted: 2023-07-26 | Discharged: 2023-08-01
+
+Principal Diagnosis: Typhoid Fever (A01.0)
+Total Charges: 20102
+
+Physician: Dr. L. Rao, MC-1008

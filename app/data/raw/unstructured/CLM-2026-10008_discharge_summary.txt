@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: AIIMS New Delhi
+
+PATIENT INFORMATION
+Name: Ramesh Pandey
+Insurance ID: POL-HLT-20073-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-07-22
+Date of Discharge: 2023-07-24
+
+CLINICAL FINDINGS
+Diagnosis: Dengue Fever
+ICD Reference: A90
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 35625 INR
+
+Signed: Dr. KK. Seshadri (MC-1032)

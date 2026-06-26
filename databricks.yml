@@ -14,6 +14,29 @@ variables:
   node_type_id:
     description: The node type to use for the job cluster (cloud agnostic or pool)
     default: Standard_D3_v2
+  # Set to "true" to read from Supabase PostgreSQL + Storage.
+  # Set to "false" only for local dev with CSVs deployed in the bundle.
+  use_supabase:
+    description: "Whether to ingest from Supabase (true) or local CSVs (false)"
+    default: "true"
+  supabase_host:
+    description: "Supabase connection pooler host"
+    default: "aws-1-ap-northeast-1.pooler.supabase.com"
+  supabase_port:
+    description: "Supabase PostgreSQL port"
+    default: "5432"
+  supabase_db:
+    description: "Supabase database name"
+    default: "postgres"
+  supabase_user:
+    description: "Supabase PostgreSQL user"
+    default: "postgres.nerwqbauracfinfvunul"
+  supabase_password:
+    description: "Supabase PostgreSQL password — set via CLI or job override, never hardcode"
+    default: ""
+  supabase_service_key:
+    description: "Supabase service role key for Storage API auth — different from DB password"
+    default: ""
 
 
 
@@ -27,17 +50,19 @@ resources:
         - name: schema
           default: ${var.schema}
         - name: use_supabase
-          default: "true"
+          default: ${var.use_supabase}
         - name: supabase_host
-          default: "aws-1-ap-northeast-1.pooler.supabase.com"
+          default: ${var.supabase_host}
         - name: supabase_port
-          default: "5432"
+          default: ${var.supabase_port}
         - name: supabase_db
-          default: "postgres"
+          default: ${var.supabase_db}
         - name: supabase_user
-          default: "postgres.nerwqbauracfinfvunul"
+          default: ${var.supabase_user}
         - name: supabase_password
-          default: ""
+          default: ${var.supabase_password}
+        - name: supabase_service_key
+          default: ${var.supabase_service_key}
       tasks:
         - task_key: setup
           notebook_task:
@@ -86,17 +111,19 @@ resources:
         - name: schema
           default: ${var.schema}
         - name: use_supabase
-          default: "true"
+          default: ${var.use_supabase}
         - name: supabase_host
-          default: "aws-1-ap-northeast-1.pooler.supabase.com"
+          default: ${var.supabase_host}
         - name: supabase_port
-          default: "5432"
+          default: ${var.supabase_port}
         - name: supabase_db
-          default: "postgres"
+          default: ${var.supabase_db}
         - name: supabase_user
-          default: "postgres.nerwqbauracfinfvunul"
+          default: ${var.supabase_user}
         - name: supabase_password
-          default: ""
+          default: ${var.supabase_password}
+        - name: supabase_service_key
+          default: ${var.supabase_service_key}
       tasks:
         - task_key: bronze
           notebook_task:

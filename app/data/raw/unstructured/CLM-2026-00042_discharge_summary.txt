@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: Government General Hospital Chennai
+
+PATIENT INFORMATION
+Name: Raj Joshi
+Insurance ID: POL-HLT-20063-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-10-31
+Date of Discharge: 2023-11-09
+
+CLINICAL FINDINGS
+Diagnosis: Gallstone Surgery
+ICD Reference: K80.20
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 46887 INR
+
+Signed: Dr. F. Das (MC-1016)

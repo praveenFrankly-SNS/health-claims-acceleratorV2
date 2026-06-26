@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: City Clinic Chennai
+Patient: Mohan Mishra | Policy: POL-HLT-20016-T1
+Admitted: 2023-08-27 | Discharged: 2023-09-06
+
+Principal Diagnosis: Typhoid Fever (A01.0)
+Total Charges: 27698
+
+Physician: Dr. B. Iyer, MC-1009

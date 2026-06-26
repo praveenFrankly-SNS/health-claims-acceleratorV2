@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: Medanta The Medicity Gurgaon
+
+PATIENT INFORMATION
+Name: Hema Joshi
+Insurance ID: POL-HLT-20063-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-10-21
+Date of Discharge: 2023-10-23
+
+CLINICAL FINDINGS
+Diagnosis: Typhoid Fever
+ICD Reference: A01.0
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 19458 INR
+
+Signed: Dr. G. Pillai (MC-1015)

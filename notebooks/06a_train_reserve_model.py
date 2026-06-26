@@ -37,11 +37,17 @@ except Exception:
     SCHEMA_NAME = "claims"
 MODEL_NAME = f"{CATALOG_NAME}.{SCHEMA_NAME}.reserve_estimation_gbm"
 
+# Re-initialize Spark after restartPython()
+from pyspark.sql import SparkSession
+spark = SparkSession.builder.getOrCreate()
+
 try:
     spark.sql(f"USE {CATALOG_NAME}.{SCHEMA_NAME}")
-    df_history = spark.table("claims_history").toPandas()
+    df_history = spark.table(f"{CATALOG_NAME}.{SCHEMA_NAME}.claims_history").toPandas()
+    print(f"✓ Loaded claims_history: {len(df_history)} rows")
 except Exception as e:
-    print(f"Running locally: {e}")
+    print(f"Spark table load failed: {e}")
+    print("Falling back to local CSV")
     repo_root = "." if os.path.exists("./data") else ".."
     df_history = pd.read_csv(f"{repo_root}/data/raw/structured/claims_history.csv")
 

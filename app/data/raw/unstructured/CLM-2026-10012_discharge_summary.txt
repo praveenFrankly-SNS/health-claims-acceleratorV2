@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Vinod Subramanian
+Policy Number: POL-HLT-20072-T1
+Admission Date: 2023-07-30
+Discharge Date: 2023-08-05
+Hospital: City Clinic Chennai
+
+Diagnosis: Coronary Angioplasty
+ICD-10 Code: I25.10
+
+Course in the Hospital:
+The patient presented with symptoms relating to Coronary Angioplasty.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 256966
+
+Attending Physician: Dr. FF. Pandey (Reg No: MC-1027)

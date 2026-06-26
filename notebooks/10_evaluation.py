@@ -64,14 +64,22 @@ else:
         df_spark = spark.table(f"`{catalog}`.`{schema}`.bronze_claim_submissions")
         df_claims = df_spark.toPandas()
         
-        volume_dir = f"/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries"
-        if not os.path.exists(volume_dir):
-            volume_dir = f"/dbfs/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries"
-            
-        if os.path.exists(volume_dir):
-            available_txts = glob.glob(f"{volume_dir}/*.txt")
-            available_pdfs = glob.glob(f"{volume_dir}/*.pdf")
-            test_files = (available_txts + available_pdfs)[:5]
+        volume_dirs = [
+            f"/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries",
+            f"/Volumes/{catalog}/{schema}/raw_documents/discharge summaries",
+            f"/dbfs/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries",
+            f"/dbfs/Volumes/{catalog}/{schema}/raw_documents/discharge summaries"
+        ]
+        test_files = []
+        volume_dir = volume_dirs[0]
+        for vd in volume_dirs:
+            if os.path.exists(vd):
+                available_txts = glob.glob(f"{vd}/*.txt")
+                available_pdfs = glob.glob(f"{vd}/*.pdf")
+                test_files = (available_txts + available_pdfs)[:5]
+                if test_files:
+                    volume_dir = vd
+                    break
         print(f"Loaded {len(df_claims)} claims and found {len(test_files)} files in volume.")
     except Exception as e:
         print(f"Failed to load from UC table/volumes: {e}")

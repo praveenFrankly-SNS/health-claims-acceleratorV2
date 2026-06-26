@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: Medanta The Medicity Gurgaon
+
+PATIENT INFORMATION
+Name: Uma Kumar
+Insurance ID: POL-HLT-20066-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-09-03
+Date of Discharge: 2023-09-10
+
+CLINICAL FINDINGS
+Diagnosis: Coronary Angioplasty
+ICD Reference: I25.10
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 263002 INR
+
+Signed: Dr. FF. Pandey (MC-1027)

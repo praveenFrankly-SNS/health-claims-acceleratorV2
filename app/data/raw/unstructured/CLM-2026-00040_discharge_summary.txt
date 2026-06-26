@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: Government General Hospital Chennai
+
+PATIENT INFORMATION
+Name: Harish Kapoor
+Insurance ID: POL-HLT-20008-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-10-28
+Date of Discharge: 2023-11-03
+
+CLINICAL FINDINGS
+Diagnosis: Viral Pneumonia
+ICD Reference: J12.9
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 72361 INR
+
+Signed: Dr. J. Banerjee (MC-1013)

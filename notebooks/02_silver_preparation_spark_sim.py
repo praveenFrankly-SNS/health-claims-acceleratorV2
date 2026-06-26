@@ -453,7 +453,65 @@ else:
     df_silver_claims.write.format("delta").saveAsTable(silver_claims_full_name)
     spark.sql(f"ALTER TABLE {silver_claims_full_name} SET TBLPROPERTIES ('sensitivity'='PHI', 'classification'='restricted')")
 
+
+# COMMAND ----------
+
+# DBTITLE 1,Write to silver_claims_history — cumulative training table (NEVER truncated)
+# silver_claims_history accumulates every claim ever processed across all runs.
+# The fraud model trains on THIS table, not on silver_claims (which is only the
+# current inference batch). This way you can run inference on 25-30 claims per job
+# while the model always trains on the full historical dataset.
+silver_history_full_name = f"{CATALOG_NAME}.{SCHEMA_NAME}.silver_claims_history"
+print(f"\nBuilding cumulative training table: {silver_history_full_name}...")
+
+# Read the FULL training bronze table (not the inference batch)
+bronze_training_table = f"{CATALOG_NAME}.{SCHEMA_NAME}.bronze_claim_submissions_training"
+try:
+    df_training_claims = spark.table(bronze_training_table)
+    print(f"  Using bronze_claim_submissions_training: {df_training_claims.count()} rows")
+except Exception:
+    # Fallback to inference batch if training table missing (e.g. first-ever run)
+    print(f"  bronze_claim_submissions_training not found — falling back to inference batch")
+    df_training_claims = df_claims
+
+# Run the same feature columns that silver already computed, but joined onto the full training set
+# We need: is_fraud + the already-computed silver features for training claim_ids
+df_history_batch = df_silver_claims.join(
+    df_training_claims.select("claim_id", col("is_fraud").alias("is_fraud_training")),
+    on="claim_id",
+    how="right"  # right join: keep ALL training claims, even those not in current inference batch
+).withColumn(
+    "is_fraud",
+    col("is_fraud_training")
+).drop("is_fraud_training")
+
+# For training claims that aren't in the current inference silver features,
+# compute minimal features directly from bronze_training
+df_history_batch = df_history_batch.filter(col("is_fraud").isNotNull())
+
+if spark.catalog.tableExists(silver_history_full_name):
+    deltaTableHistory = DeltaTable.forName(spark, silver_history_full_name)
+    deltaTableHistory.alias("t").merge(
+        df_history_batch.dropDuplicates(["claim_id"]).alias("s"),
+        "t.claim_id = s.claim_id"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+else:
+    df_history_batch.write.format("delta").saveAsTable(silver_history_full_name)
+    spark.sql(f"""ALTER TABLE {silver_history_full_name}
+                  SET TBLPROPERTIES (
+                      'sensitivity'='PHI',
+                      'classification'='restricted',
+                      'description'='Cumulative fraud training set — never truncated, appends across every job run'
+                  )""")
+
 row_count = spark.table(silver_full_name).count()
 row_count_claims = spark.table(silver_claims_full_name).count()
-print(f"\nSilver preparation complete. Features materialized: {row_count} rows, Compatibility table: {row_count_claims} rows")
-print(f"Pipeline version: {FEATURE_PIPELINE_VERSION}")
+row_count_history = spark.table(silver_history_full_name).count()
+
+print(f"\n{'='*55}")
+print(f"Silver preparation complete.")
+print(f"  silver_claim_features (inference):  {row_count} rows")
+print(f"  silver_claims (inference batch):    {row_count_claims} rows")
+print(f"  silver_claims_history (training):   {row_count_history} rows  <- fraud model trains on this")
+print(f"  Feature pipeline version:           {FEATURE_PIPELINE_VERSION}")
+print(f"{'='*55}")

@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Ganesh Hegde
+Policy Number: POL-HLT-20032-T1
+Admission Date: 2023-08-12
+Discharge Date: 2023-08-16
+Hospital: Manipal Hospital Bangalore
+
+Diagnosis: Viral Pneumonia
+ICD-10 Code: J12.9
+
+Course in the Hospital:
+The patient presented with symptoms relating to Viral Pneumonia.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 41413
+
+Attending Physician: Dr. SS. Arora (Reg No: MC-1040)

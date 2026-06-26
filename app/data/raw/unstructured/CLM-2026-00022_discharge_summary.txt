@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: City Clinic Chennai
+
+PATIENT INFORMATION
+Name: Manoj Pandey
+Insurance ID: POL-HLT-20011-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-09-07
+Date of Discharge: 2023-09-13
+
+CLINICAL FINDINGS
+Diagnosis: Knee Replacement
+ICD Reference: Z96.65
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 271140 INR
+
+Signed: Dr. R. Gupta (MC-1005)

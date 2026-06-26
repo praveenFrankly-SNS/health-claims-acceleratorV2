@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: City Clinic Chennai
+Patient: Rahul Saxena | Policy: POL-HLT-20013-T1
+Admitted: 2023-09-09 | Discharged: 2023-09-14
+
+Principal Diagnosis: Typhoid Fever (A01.0)
+Total Charges: 21998
+
+Physician: Dr. FF. Pandey, MC-1027

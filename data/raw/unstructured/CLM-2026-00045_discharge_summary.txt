@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Ganesh Hegde
+Policy Number: POL-HLT-20032-T1
+Admission Date: 2023-11-09
+Discharge Date: 2023-11-18
+Hospital: Narayana Health Bangalore
+
+Diagnosis: Coronary Angioplasty
+ICD-10 Code: I25.10
+
+Course in the Hospital:
+The patient presented with symptoms relating to Coronary Angioplasty.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 190896
+
+Attending Physician: Dr. PP. Raman (Reg No: MC-1037)

@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: AIIMS New Delhi
+Patient: Suresh Kumar | Policy: POL-HLT-20066-T1
+Admitted: 2023-07-04 | Discharged: 2023-07-09
+
+Principal Diagnosis: Viral Pneumonia (J12.9)
+Total Charges: 53739
+
+Physician: Dr. UU. Khatri, MC-1042

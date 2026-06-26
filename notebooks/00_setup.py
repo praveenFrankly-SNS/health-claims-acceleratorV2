@@ -13,7 +13,7 @@
 dbutils.widgets.text("catalog", "health_claims_dev", "Catalog Name")
 dbutils.widgets.text("schema", "claims", "Schema Name")
 dbutils.widgets.text("env", "dev", "Environment (dev/staging/prod)")
-dbutils.widgets.text("use_supabase", "false", "Use Supabase")
+dbutils.widgets.text("use_supabase", "true", "Use Supabase")
 
 catalog = dbutils.widgets.get("catalog")
 schema  = dbutils.widgets.get("schema")
@@ -217,6 +217,43 @@ spark.sql(f"""
     TBLPROPERTIES ('sensitivity'='PHI', 'classification'='restricted')
 """)
 print("✓ Table silver_claim_features ready")
+
+# ---- silver_claims_history — cumulative fraud training table ----
+# This table accumulates ALL claims across every job run (via MERGE in 02_silver).
+# The fraud model always trains on this, never on silver_claims (which is the
+# current inference batch only). Even when you run inference on 25-30 claims,
+# the training set keeps growing with each run.
+spark.sql(f"""
+    CREATE TABLE IF NOT EXISTS `{catalog}`.`{schema}`.`silver_claims_history` (
+        claim_id STRING NOT NULL,
+        policy_number STRING,
+        claimant_id STRING,
+        date_of_loss STRING,
+        claimed_amount INT,
+        days_since_inception INT,
+        amount_to_premium_ratio DOUBLE,
+        member_claim_velocity_90d INT,
+        policy_claim_velocity_90d INT,
+        remaining_sum_insured_balance INT,
+        physician_fraud_ratio DOUBLE,
+        hospital_billing_velocity_30d INT,
+        pre_auth_category STRING,
+        pre_auth_approval_ratio DOUBLE,
+        pct_bills_exceeding_structured_limits DOUBLE,
+        feature_pipeline_version STRING,
+        claimant_name_hash STRING,
+        ingested_at TIMESTAMP,
+        is_fraud INT COMMENT 'Ground truth label — only resolved claims (no INVESTIGATION_PENDING)',
+        claim_velocity INT,
+        CONSTRAINT pk_silver_history PRIMARY KEY (claim_id)
+    ) USING delta
+    TBLPROPERTIES (
+        'sensitivity'='PHI',
+        'classification'='restricted',
+        'description'='Cumulative fraud training set — never truncated, appends across every job run'
+    )
+""")
+print("✓ Table silver_claims_history ready (cumulative training set)")
 
 # COMMAND ----------
 

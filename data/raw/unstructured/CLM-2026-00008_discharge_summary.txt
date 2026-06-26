@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: Narayana Health Bangalore
+
+PATIENT INFORMATION
+Name: Manoj Pandey
+Insurance ID: POL-HLT-20011-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-07-28
+Date of Discharge: 2023-07-31
+
+CLINICAL FINDINGS
+Diagnosis: Knee Replacement
+ICD Reference: Z96.65
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 344158 INR
+
+Signed: Dr. GG. Agarwal (MC-1028)

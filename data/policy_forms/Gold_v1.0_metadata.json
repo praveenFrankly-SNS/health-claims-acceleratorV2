@@ -1,0 +1,54 @@
+{
+  "plan_tier": "Gold",
+  "form_version": "v1.0",
+  "effective_start_date": "2023-01-01",
+  "effective_end_date": "2024-12-31",
+  "room_rent_cap_pct": 0.015,
+  "icu_cap_pct": 0.03,
+  "proportionate_deduction_applies": true,
+  "proportionate_deduction_cascades_to": [
+    "CONSULTANT_FEES",
+    "PHARMACY",
+    "DIAGNOSTICS",
+    "OTHER"
+  ],
+  "network_copay": 0.0,
+  "non_network_copay": 0.05,
+  "senior_citizen_copay": 0.15,
+  "senior_citizen_age_threshold": 60,
+  "respiratory_copay": 0.05,
+  "cardiovascular_copay": 0.05,
+  "pre_existing_disease_waiting_months": 36,
+  "specific_disease_waiting_months": 12,
+  "specific_disease_waiting_conditions": [
+    "H25.9",
+    "K40.90"
+  ],
+  "sub_limits": [
+    {
+      "category": "CATARACT",
+      "icd_codes": [
+        "H25.9"
+      ],
+      "cap_type": "FIXED",
+      "value": 50000
+    },
+    {
+      "category": "CARDIOVASCULAR",
+      "icd_codes": [
+        "I25.10"
+      ],
+      "cap_type": "PCT_SUM_INSURED",
+      "value": 0.75
+    },
+    {
+      "category": "KNEE_REPLACEMENT",
+      "icd_codes": [
+        "Z96.65"
+      ],
+      "cap_type": "FIXED",
+      "value": 250000
+    }
+  ],
+  "dependent_age_limit": 25
+}

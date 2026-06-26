@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Satish Nair
+Policy Number: POL-HLT-20012-T1
+Admission Date: 2023-09-30
+Discharge Date: 2023-10-06
+Hospital: Manipal Hospital Bangalore
+
+Diagnosis: Viral Pneumonia
+ICD-10 Code: J12.9
+
+Course in the Hospital:
+The patient presented with symptoms relating to Viral Pneumonia.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 73479
+
+Attending Physician: Dr. HH. Choudhury (Reg No: MC-1029)

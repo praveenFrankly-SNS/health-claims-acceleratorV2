@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Sunita Saxena
+Policy Number: POL-HLT-20013-T1
+Admission Date: 2023-08-29
+Discharge Date: 2023-09-06
+Hospital: City Clinic Chennai
+
+Diagnosis: Fracture Treatment
+ICD-10 Code: S72.009A
+
+Course in the Hospital:
+The patient presented with symptoms relating to Fracture Treatment.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 75397
+
+Attending Physician: Dr. Y. Malhotra (Reg No: MC-1020)

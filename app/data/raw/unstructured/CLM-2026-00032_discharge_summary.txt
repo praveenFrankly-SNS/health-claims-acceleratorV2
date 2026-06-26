@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: Fortis Healthcare Mumbai
+
+PATIENT INFORMATION
+Name: Suresh Kumar
+Insurance ID: POL-HLT-20066-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-10-08
+Date of Discharge: 2023-10-18
+
+CLINICAL FINDINGS
+Diagnosis: Viral Pneumonia
+ICD Reference: J12.9
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 56727 INR
+
+Signed: Dr. II. Deshpande (MC-1030)

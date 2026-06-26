@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: Medanta The Medicity Gurgaon
+Patient: Vidya Kumar | Policy: POL-HLT-20066-T1
+Admitted: 2023-07-23 | Discharged: 2023-07-30
+
+Principal Diagnosis: Gallstone Surgery (K80.20)
+Total Charges: 190768
+
+Physician: Dr. H. Patel, MC-1003

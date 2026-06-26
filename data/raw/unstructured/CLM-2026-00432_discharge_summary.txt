@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: Manipal Hospital Bangalore
+
+PATIENT INFORMATION
+Name: Vijay Sharma
+Insurance ID: POL-HLT-20055-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-11-17
+Date of Discharge: 2023-11-25
+
+CLINICAL FINDINGS
+Diagnosis: Viral Pneumonia
+ICD Reference: J12.9
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 42439 INR
+
+Signed: Dr. CC. Mishra (MC-1024)

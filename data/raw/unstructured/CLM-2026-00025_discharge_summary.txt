@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: AIIMS New Delhi
+Patient: Uma Kumar | Policy: POL-HLT-20066-T1
+Admitted: 2023-09-26 | Discharged: 2023-09-27
+
+Principal Diagnosis: Knee Replacement (Z96.65)
+Total Charges: 322440
+
+Physician: Dr. NN. Venkatesh, MC-1035

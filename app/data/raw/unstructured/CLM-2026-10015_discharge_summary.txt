@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: City Clinic Chennai
+
+PATIENT INFORMATION
+Name: Mohan Subramanian
+Insurance ID: POL-HLT-20072-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-08-04
+Date of Discharge: 2023-08-05
+
+CLINICAL FINDINGS
+Diagnosis: Cataract Surgery
+ICD Reference: H25.9
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 24910 INR
+
+Signed: Dr. WW. Ahuja (MC-1044)

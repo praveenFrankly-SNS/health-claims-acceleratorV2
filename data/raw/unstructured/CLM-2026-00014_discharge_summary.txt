@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Vidya Kumar
+Policy Number: POL-HLT-20066-T1
+Admission Date: 2023-08-20
+Discharge Date: 2023-08-23
+Hospital: Medanta The Medicity Gurgaon
+
+Diagnosis: Knee Replacement
+ICD-10 Code: Z96.65
+
+Course in the Hospital:
+The patient presented with symptoms relating to Knee Replacement.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 364693
+
+Attending Physician: Dr. EE. Tiwari (Reg No: MC-1026)

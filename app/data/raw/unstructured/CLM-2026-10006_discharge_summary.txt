@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Padma Verma
+Policy Number: POL-HLT-20052-T1
+Admission Date: 2023-07-15
+Discharge Date: 2023-07-23
+Hospital: Ruby Hall Clinic Pune
+
+Diagnosis: Typhoid Fever
+ICD-10 Code: A01.0
+
+Course in the Hospital:
+The patient presented with symptoms relating to Typhoid Fever.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 22015
+
+Attending Physician: Dr. BB. Kulkarni (Reg No: MC-1023)

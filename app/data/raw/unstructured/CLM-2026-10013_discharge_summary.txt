@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Geeta Pandey
+Policy Number: POL-HLT-20073-T1
+Admission Date: 2023-07-30
+Discharge Date: 2023-08-02
+Hospital: Max Super Speciality Delhi
+
+Diagnosis: Dengue Fever
+ICD-10 Code: A90
+
+Course in the Hospital:
+The patient presented with symptoms relating to Dengue Fever.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 35273
+
+Attending Physician: Dr. D. Chatterjee (Reg No: MC-1010)

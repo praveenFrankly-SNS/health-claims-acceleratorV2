@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: Manipal Hospital Bangalore
+
+PATIENT INFORMATION
+Name: Sarala Pillai
+Insurance ID: POL-HLT-20022-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-09-08
+Date of Discharge: 2023-09-10
+
+CLINICAL FINDINGS
+Diagnosis: Cataract Surgery
+ICD Reference: H25.9
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 47464 INR
+
+Signed: Dr. K. Menon (MC-1007)

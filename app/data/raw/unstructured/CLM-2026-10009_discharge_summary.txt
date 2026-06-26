@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Vinod Subramanian
+Policy Number: POL-HLT-20072-T1
+Admission Date: 2023-07-24
+Discharge Date: 2023-08-03
+Hospital: Fortis Healthcare Mumbai
+
+Diagnosis: Gallstone Surgery
+ICD-10 Code: K80.20
+
+Course in the Hospital:
+The patient presented with symptoms relating to Gallstone Surgery.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 47641
+
+Attending Physician: Dr. CC. Mishra (Reg No: MC-1024)

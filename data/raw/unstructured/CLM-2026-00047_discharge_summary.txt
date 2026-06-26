@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: Government General Hospital Chennai
+Patient: Sarala Saxena | Policy: POL-HLT-20057-T1
+Admitted: 2023-11-13 | Discharged: 2023-11-19
+
+Principal Diagnosis: Dengue Fever (A90)
+Total Charges: 21039
+
+Physician: Dr. BC. Tandon, MC-1049

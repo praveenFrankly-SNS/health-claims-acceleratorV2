@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Suresh Kumar
+Policy Number: POL-HLT-20066-T1
+Admission Date: 2023-07-10
+Discharge Date: 2023-07-20
+Hospital: Manipal Hospital Bangalore
+
+Diagnosis: Appendectomy
+ICD-10 Code: K35.80
+
+Course in the Hospital:
+The patient presented with symptoms relating to Appendectomy.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 73525
+
+Attending Physician: Dr. T. Sharma (Reg No: MC-1012)

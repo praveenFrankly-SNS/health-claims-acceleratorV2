@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: Medanta The Medicity Gurgaon
+
+PATIENT INFORMATION
+Name: Kavitha Chatterjee
+Insurance ID: POL-HLT-20062-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-09-27
+Date of Discharge: 2023-10-06
+
+CLINICAL FINDINGS
+Diagnosis: Fracture Treatment
+ICD Reference: S72.009A
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 63890 INR
+
+Signed: Dr. W. Srinivasan (MC-1018)

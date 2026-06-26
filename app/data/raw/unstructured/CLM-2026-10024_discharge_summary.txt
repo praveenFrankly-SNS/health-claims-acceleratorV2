@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: AIIMS New Delhi
+
+PATIENT INFORMATION
+Name: Karthik Chatterjee
+Insurance ID: POL-HLT-20034-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-08-24
+Date of Discharge: 2023-08-31
+
+CLINICAL FINDINGS
+Diagnosis: Fracture Treatment
+ICD Reference: S72.009A
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 85622 INR
+
+Signed: Dr. Y. Malhotra (MC-1020)

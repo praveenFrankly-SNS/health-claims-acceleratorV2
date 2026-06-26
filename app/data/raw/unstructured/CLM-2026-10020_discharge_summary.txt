@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: AIIMS New Delhi
+Patient: Rekha Saxena | Policy: POL-HLT-20013-T1
+Admitted: 2023-08-15 | Discharged: 2023-08-23
+
+Principal Diagnosis: Dengue Fever (A90)
+Total Charges: 18208
+
+Physician: Dr. SS. Arora, MC-1040

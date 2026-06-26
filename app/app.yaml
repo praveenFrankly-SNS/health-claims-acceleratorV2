@@ -1,4 +1,41 @@
 command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# Declare UC resources so the App process can access them directly.
+# Without these declarations, os.path.exists("/Volumes/...") returns False
+# and spark.table(...) fails with permission errors.
+resources:
+  - name: "raw-documents-volume"
+    uc_volume:
+      catalog: "health_claims_dev"
+      schema: "claims"
+      volume: "raw_documents"
+  - name: "policy-forms-volume"
+    uc_volume:
+      catalog: "health_claims_dev"
+      schema: "claims"
+      volume: "policy_forms"
+  - name: "claims-warehouse"
+    sql_warehouse:
+      id: "305d2bf689add41b"
+
 env:
   - name: "DATABRICKS_HTTP_PATH"
     value: "/sql/1.0/warehouses/305d2bf689add41b"
+  - name: "SUPABASE_URL"
+    value: "https://nerwqbauracfinfvunul.supabase.co"
+  - name: "SUPABASE_SERVICE_KEY"
+    value: "sb_secret_rT_ljNuqMXqkSW_zi_9UeA_HXbMKZi6"
+  - name: "SUPABASE_USER"
+    value: "postgres"
+  - name: "SUPABASE_PASSWORD"
+    value: "0UHyjvZPl9pl5Mkm"
+  - name: "SUPABASE_DB_HOST"
+    value: "aws-1-ap-northeast-1.pooler.supabase.com"
+  - name: "CATALOG_NAME"
+    value: "health_claims_dev"
+  - name: "SCHEMA_NAME"
+    value: "claims"
+  - name: "RAW_DOCUMENTS_VOLUME_PATH"
+    valueFrom: "raw-documents-volume"
+  - name: "POLICY_FORMS_VOLUME_PATH"
+    valueFrom: "policy-forms-volume"

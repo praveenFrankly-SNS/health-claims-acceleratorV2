@@ -1,0 +1,20 @@
+# Exclude node_modules — these are not needed on Databricks workspace
+# The pre-built dist/ folder is included (it has the compiled React assets)
+app/frontend/node_modules/
+
+# Exclude local Python caches
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# # Exclude local data files — data lives in Supabase + UC Volumes, not in the bundle
+# data/raw/unstructured/
+# data/raw/bills/
+# data/raw/training/
+
+# Exclude local model pickles — models are registered in MLflow UC
+models/
+
+# Exclude local env
+.env

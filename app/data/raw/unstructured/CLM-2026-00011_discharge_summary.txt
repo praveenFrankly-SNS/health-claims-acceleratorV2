@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: City Clinic Chennai
+Patient: Rajan Sharma | Policy: POL-HLT-20006-T1
+Admitted: 2023-08-09 | Discharged: 2023-08-13
+
+Principal Diagnosis: Fracture Treatment (S72.009A)
+Total Charges: 65435
+
+Physician: Dr. B. Iyer, MC-1009

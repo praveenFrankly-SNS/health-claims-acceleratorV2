@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: Fortis Healthcare Mumbai
+Patient: Vidya Chatterjee | Policy: POL-HLT-20062-T1
+Admitted: 2023-10-03 | Discharged: 2023-10-10
+
+Principal Diagnosis: Hernia Repair (K40.90)
+Total Charges: 58133
+
+Physician: Dr. ZZ. Sethi, MC-1047

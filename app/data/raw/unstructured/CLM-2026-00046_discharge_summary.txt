@@ -1,0 +1,19 @@
+DISCHARGE SUMMARY
+-----------------
+Patient Name: Rajan Sharma
+Policy Number: POL-HLT-20006-T1
+Admission Date: 2023-11-10
+Discharge Date: 2023-11-15
+Hospital: Ruby Hall Clinic Pune
+
+Diagnosis: Hernia Repair
+ICD-10 Code: K40.90
+
+Course in the Hospital:
+The patient presented with symptoms relating to Hernia Repair.
+Routine investigations were carried out. The patient was managed
+conservatively/surgically and responded well to the treatment.
+
+Final Bill Amount: INR 60969
+
+Attending Physician: Dr. RR. Bhatt (Reg No: MC-1039)

@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: Manipal Hospital Bangalore
+Patient: Rajesh Banerjee | Policy: POL-HLT-20013-T1
+Admitted: 2023-11-16 | Discharged: 2023-11-21
+
+Principal Diagnosis: Gallstone Surgery (K80.20)
+Total Charges: 40545
+
+Physician: Dr. OO. Subramanian, MC-1036

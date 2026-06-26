@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: Narayana Health Bangalore
+Patient: Dinesh Das | Policy: POL-HLT-20060-T1
+Admitted: 2023-09-23 | Discharged: 2023-09-30
+
+Principal Diagnosis: Typhoid Fever (A01.0)
+Total Charges: 20758
+
+Physician: Dr. C. Joshi, MC-1014

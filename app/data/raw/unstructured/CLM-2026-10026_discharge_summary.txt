@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: Manipal Hospital Bangalore
+Patient: Rajesh Saxena | Policy: POL-HLT-20013-T1
+Admitted: 2023-08-28 | Discharged: 2023-09-01
+
+Principal Diagnosis: Fracture Treatment (S72.009A)
+Total Charges: 89836
+
+Physician: Dr. N. Verma, MC-1006

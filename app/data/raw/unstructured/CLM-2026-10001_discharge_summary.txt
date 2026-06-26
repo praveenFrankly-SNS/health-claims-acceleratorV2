@@ -1,0 +1,9 @@
+HOSPITAL DISCHARGE RECORD
+Hospital: Government General Hospital Chennai
+Patient: Satish Patel | Policy: POL-HLT-20020-T1
+Admitted: 2023-07-05 | Discharged: 2023-07-10
+
+Principal Diagnosis: Typhoid Fever (A01.0)
+Total Charges: 19145
+
+Physician: Dr. OO. Subramanian, MC-1036

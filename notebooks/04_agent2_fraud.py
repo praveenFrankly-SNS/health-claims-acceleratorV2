@@ -127,8 +127,12 @@ def agent2_fraud(claim_state: dict) -> dict:
         f"{repo_root}/data/raw/unstructured/{claim_id}_discharge_summary.pdf",
         f"/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries/{claim_id}_discharge_summary.txt",
         f"/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries/{claim_id}_discharge_summary.pdf",
+        f"/Volumes/{catalog}/{schema}/raw_documents/discharge summaries/{claim_id}_discharge_summary.txt",
+        f"/Volumes/{catalog}/{schema}/raw_documents/discharge summaries/{claim_id}_discharge_summary.pdf",
         f"/dbfs/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries/{claim_id}_discharge_summary.txt",
         f"/dbfs/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries/{claim_id}_discharge_summary.pdf",
+        f"/dbfs/Volumes/{catalog}/{schema}/raw_documents/discharge summaries/{claim_id}_discharge_summary.txt",
+        f"/dbfs/Volumes/{catalog}/{schema}/raw_documents/discharge summaries/{claim_id}_discharge_summary.pdf",
     ]
     
     document_text = ""

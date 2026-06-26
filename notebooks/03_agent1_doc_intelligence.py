@@ -58,35 +58,62 @@ def agent1_doc_intelligence(claim_state: dict) -> dict:
     else:
         repo_root = "."
 
+    def _read_pdf_text(raw_bytes: bytes) -> str:
+        """Try multiple PDF extraction methods — fpdf2-generated PDFs need pypdf not PyPDF2."""
+        from io import BytesIO
+        try:
+            import pypdf
+            reader = pypdf.PdfReader(BytesIO(raw_bytes))
+            text = "\n".join(page.extract_text() or "" for page in reader.pages)
+            if text.strip():
+                return text
+        except Exception:
+            pass
+        try:
+            import PyPDF2
+            reader = PyPDF2.PdfReader(BytesIO(raw_bytes))
+            text = "\n".join(page.extract_text() or "" for page in reader.pages)
+            if text.strip():
+                return text
+        except Exception:
+            pass
+        return ""
+
     paths_to_try = [
         f"{repo_root}/data/raw/unstructured/{claim_id}_discharge_summary.txt",
         f"{repo_root}/data/raw/unstructured/{claim_id}_discharge_summary.pdf",
         f"/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries/{claim_id}_discharge_summary.txt",
         f"/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries/{claim_id}_discharge_summary.pdf",
+        f"/Volumes/{catalog}/{schema}/raw_documents/discharge summaries/{claim_id}_discharge_summary.txt",
+        f"/Volumes/{catalog}/{schema}/raw_documents/discharge summaries/{claim_id}_discharge_summary.pdf",
         f"/dbfs/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries/{claim_id}_discharge_summary.txt",
         f"/dbfs/Volumes/{catalog}/{schema}/raw_documents/discharge-summaries/{claim_id}_discharge_summary.pdf",
+        f"/dbfs/Volumes/{catalog}/{schema}/raw_documents/discharge summaries/{claim_id}_discharge_summary.txt",
+        f"/dbfs/Volumes/{catalog}/{schema}/raw_documents/discharge summaries/{claim_id}_discharge_summary.pdf",
     ]
-    
+
     document_text = ""
     for path in paths_to_try:
-        if os.path.exists(path):
-            try:
-                if path.endswith(".pdf"):
-                    with open(path, "rb") as f:
-                        raw = f.read()
-                    import PyPDF2
-                    from io import BytesIO
-                    reader = PyPDF2.PdfReader(BytesIO(raw))
-                    document_text = "\n".join(page.extract_text() for page in reader.pages)
-                else:
-                    with open(path, "r", encoding="utf-8", errors="replace") as f:
-                        document_text = f.read()
-                if document_text.strip():
-                    break
-            except Exception as e:
-                print(f"[Agent 1] Failed to read from {path}: {e}")
+        try:
+            # Use open() directly — os.path.exists() can fail on UC Volume subdirs
+            # even when the file is actually readable
+            if path.endswith(".pdf"):
+                with open(path, "rb") as f:
+                    document_text = _read_pdf_text(f.read())
+            else:
+                with open(path, "r", encoding="utf-8", errors="replace") as f:
+                    document_text = f.read()
+            if document_text.strip():
+                print(f"[Agent 1] Loaded document from: {path}")
+                break
+        except (FileNotFoundError, OSError):
+            continue
+        except Exception as e:
+            print(f"[Agent 1] Failed to read from {path}: {e}")
+            continue
 
-    if not document_text:
+    if not document_text.strip():
+        print(f"[Agent 1] No discharge summary found for {claim_id} in any volume path.")
         return {"completeness_score": 0.0, "missing_fields": ["discharge_summary"], "extracted_data": {}}
 
     prompt = f"""

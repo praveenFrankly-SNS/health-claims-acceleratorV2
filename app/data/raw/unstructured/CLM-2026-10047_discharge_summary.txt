@@ -1,0 +1,22 @@
+========================================
+CLINICAL DISCHARGE REPORT
+========================================
+Facility: Max Super Speciality Delhi
+
+PATIENT INFORMATION
+Name: Manoj Pillai
+Insurance ID: POL-HLT-20022-T1
+
+ENCOUNTER DETAILS
+Date of Admission: 2023-10-05
+Date of Discharge: 2023-10-10
+
+CLINICAL FINDINGS
+Diagnosis: Typhoid Fever
+ICD Reference: A01.0
+The patient was admitted and treated for the above condition.
+
+FINANCIAL
+Total Incurred Amount: 14131 INR
+
+Signed: Dr. R. Gupta (MC-1005)

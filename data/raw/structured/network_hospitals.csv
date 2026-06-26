@@ -1,0 +1,11 @@
+hospital_id,hospital_name,tier,network_status
+HOSP-001,Apollo Hospital Coimbatore,TIER_1,IN-NETWORK
+HOSP-002,Fortis Healthcare Mumbai,TIER_1,IN-NETWORK
+HOSP-003,Max Super Speciality Delhi,TIER_1,OUT-OF-NETWORK
+HOSP-004,AIIMS New Delhi,GOVT,IN-NETWORK
+HOSP-005,Manipal Hospital Bangalore,TIER_1,IN-NETWORK
+HOSP-006,City Clinic Chennai,TIER_2,OUT-OF-NETWORK
+HOSP-007,Medanta The Medicity Gurgaon,TIER_1,IN-NETWORK
+HOSP-008,Narayana Health Bangalore,TIER_1,IN-NETWORK
+HOSP-009,Ruby Hall Clinic Pune,TIER_2,IN-NETWORK
+HOSP-010,Government General Hospital Chennai,GOVT,IN-NETWORK
