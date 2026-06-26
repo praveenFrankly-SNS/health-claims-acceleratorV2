@@ -121,6 +121,7 @@ CREATE TABLE IF NOT EXISTS {bronze_submissions_table} (
     status STRING,
     is_fraud INT,
     ingested_at TIMESTAMP,
+    claim_form_metadata STRING,
     source STRING
 )
 TBLPROPERTIES (

@@ -138,6 +138,7 @@ spark.sql(f"""
         submission_date STRING,
         status STRING COMMENT 'NEW, INVESTIGATION_PENDING, RESOLVED_FRAUD, RESOLVED_CLEAN',
         is_fraud INT COMMENT 'Ground truth label for training — NOT used in inference',
+        claim_form_metadata STRING,
         CONSTRAINT pk_claim_submissions PRIMARY KEY (claim_id)
     ) USING delta
     TBLPROPERTIES ('sensitivity'='PHI', 'classification'='restricted')

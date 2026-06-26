@@ -137,7 +137,8 @@ def ingest_new_claim_from_supabase(claim_id: str):
         "claimed_amount": claim_sub.get("claimed_amount"),
         "submission_date": claim_sub.get("submission_date"),
         "status": claim_sub.get("status"),
-        "is_fraud": claim_sub.get("is_fraud")
+        "is_fraud": claim_sub.get("is_fraud"),
+        "claim_form_metadata": claim_sub.get("claim_form_metadata")
     }])
     from pyspark.sql.functions import current_timestamp
     df_sub_new = df_sub_new.withColumn("ingested_at", current_timestamp())
