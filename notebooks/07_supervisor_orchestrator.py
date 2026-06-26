@@ -31,6 +31,8 @@ dbutils.widgets.text("catalog", "health_claims_dev")
 dbutils.widgets.text("schema", "claims")
 CATALOG_NAME = dbutils.widgets.get("catalog")
 SCHEMA_NAME = dbutils.widgets.get("schema")
+os.environ["CATALOG_NAME"] = CATALOG_NAME
+os.environ["SCHEMA_NAME"] = SCHEMA_NAME
 
 # Ensure we can import the agent functions from src package
 notebook_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
@@ -165,7 +167,8 @@ try:
     else:
         df_new_claims = df_silver
         
-    claims_to_process = [row.asDict() for row in df_new_claims.collect()]
+    # Limit batch to prevent overwhelming job execution on large tables
+    claims_to_process = [row.asDict() for row in df_new_claims.limit(10).collect()]
 except Exception as e:
     print(f"Could not read silver table: {e}. Using dummy IDs.")
     claims_to_process = [{"claim_id": "CLM-2026-10000"}]

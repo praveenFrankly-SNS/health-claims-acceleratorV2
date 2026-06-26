@@ -208,7 +208,7 @@ spark.sql(f"""
         pre_auth_category STRING COMMENT 'PRE_AUTH_NOT_SOUGHT, PRE_AUTH_DENIED, PRE_AUTH_APPROVED',
         pre_auth_approval_ratio DOUBLE,
         pct_bills_exceeding_structured_limits DOUBLE,
-        feature_pipeline_version STRING DEFAULT 'v2.0',
+        feature_pipeline_version STRING,
         claimant_name_hash STRING,
         ingested_at TIMESTAMP,
         CONSTRAINT pk_silver_features PRIMARY KEY (claim_id)
@@ -304,4 +304,34 @@ audit_data = [{
      .saveAsTable(f"`{catalog}`.`audit`.`setup_log`"))
 
 print("✓ Audit log entry written")
+
+# DBTITLE 1,Seed claims_history table with historical settlements
+spark.sql(f"""
+    CREATE TABLE IF NOT EXISTS `{catalog}`.`{schema}`.`claims_history` (
+        historical_claim_id STRING,
+        diagnosis_icd STRING,
+        settled_amount DOUBLE
+    ) USING delta
+""")
+
+history_count = spark.sql(f"SELECT count(*) FROM `{catalog}`.`{schema}`.`claims_history`").collect()[0][0]
+if history_count == 0:
+    import random
+    diagnoses_seed = [
+        ("K35.80", 60000), ("A90", 25000), ("Z96.65", 250000), ("H25.9", 35000),
+        ("J12.9", 50000), ("I25.10", 180000), ("K40.90", 45000), ("S72.009A", 70000),
+        ("A01.0", 20000), ("K80.20", 55000)
+    ]
+    history_data = []
+    for idx in range(1000):
+        diag_code, base_amt = random.choice(diagnoses_seed)
+        settled_amt = float(base_amt * random.uniform(0.85, 1.15))
+        history_data.append({
+            "historical_claim_id": f"HIST-CLM-{idx:05d}",
+            "diagnosis_icd": diag_code,
+            "settled_amount": settled_amt
+        })
+    spark.createDataFrame(history_data).write.format("delta").mode("overwrite").saveAsTable(f"`{catalog}`.`{schema}`.`claims_history`")
+    print("✓ Seeded claims_history table with synthetic historical claims")
+
 print("\nRun notebooks in this order next: 01 → 02 → 03 → 04 → 05 → 06 → 07")
