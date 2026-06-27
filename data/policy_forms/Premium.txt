@@ -1,8 +1,14 @@
 Section 1.1
-Policy Overview: The Premium Health Insurance Plan is our flagship, top-tier health coverage policy. It provides global coverage, exclusive benefits, and zero sub-limits, ensuring that you have access to the absolute best healthcare facilities worldwide without any financial restrictions.
+Policy Overview: The Star Premium Health Insurance Plan is our flagship, top-tier health coverage policy. It provides global coverage, exclusive benefits, and zero sub-limits, ensuring that you have access to the absolute best healthcare facilities worldwide without any financial restrictions. The plan is designed for policyholders seeking unlimited protection, lifetime claim coverage, and concierge-level service.
 
 Section 1.2
-Eligibility and Sum Insured: This policy is available for individuals aged 18 to 85. Base Sum Insured options range from $500,000 to unlimited coverage. 
+Eligibility and Sum Insured: This policy is available for individuals aged 18 to 85. Dependent children are eligible for cover from 91 days of age to 25 years. Base Sum Insured options range from $500,000 to unlimited coverage. Family Floater cover may extend to spouse, children, parents, parents-in-law, and siblings, subject to underwriting.
+
+Section 1.3
+Freeze Your Age Benefit: For policyholders enrolling at or before age 50, the premium is calculated and locked at the age of entry and remains unchanged at every renewal until the first claim is made under In-Patient, Day Care, or AYUSH treatment, or until the insured reaches age 56, whichever occurs first.
+
+Section 1.4
+Limitless Care Benefit: Each insured person is entitled, once in the lifetime of the policy, to a single claim with no Sum Insured ceiling for an admissible In-Patient or Day Care hospitalization, provided this benefit is opted for within the first 3 policy years and has not previously been invoked.
 
 Section 2.1
 In-Patient Hospitalization: We will cover all medical expenses for hospitalization without any minimum duration requirement. This includes room rent, nursing charges, intensive care unit (ICU) charges, specialist consultation fees, surgeon fees, operating theater charges, robotic surgeries, and all prescribed medicines, implants, and drugs.
@@ -10,37 +16,83 @@ In-Patient Hospitalization: We will cover all medical expenses for hospitalizati
 Section 2.2
 Room Rent and ICU Limits: Under the Premium Plan, there are strictly NO sub-limits on room rent or ICU charges. The insured is eligible for any available room type, including deluxe suites and luxury hospital accommodations, without any proportional deduction on associated medical expenses.
 
+Section 2.3
+Domiciliary and Home Care Treatment: Home Care Treatment for conditions that would normally require hospitalization, but are instead managed at home under a documented active line of treatment with daily monitoring by a medical practitioner, is covered up to the Base Sum Insured.
+
+Section 2.4
+Consumables and Non-Medical Expenses: All non-medical consumables, including PPE kits, gloves, syringes, and oxygen masks, are covered in full up to the Base Sum Insured with no separate cap, as a standard inclusion rather than an add-on.
+
 Section 3.1
-Pre and Post Hospitalization: Medical expenses incurred up to 90 days prior to the date of admission, and up to 180 days post discharge, are fully covered under this policy.
+Pre and Post Hospitalization: Medical expenses incurred up to 90 days prior to the date of admission, and up to 180 days post discharge, are fully covered under this policy, provided they are related to the same medical condition.
+
+Section 3.2
+Emergency Ambulance and Air Evacuation: Emergency road ambulance services are covered in full up to the Base Sum Insured. Domestic air ambulance evacuation is covered up to $50,000 per policy year when medically necessary to transfer the patient to a specialized care center.
 
 Section 4.1
 Coverage for Respiratory Illnesses: Treatment for acute and chronic lower respiratory infections, including all variants of Bronchitis, Asthma, ARDS, and all forms of Pneumonia (including ICD codes J12.9 and J18.9), is comprehensively covered up to the Base Sum Insured. Home healthcare for respiratory conditions is also covered if prescribed by a pulmonologist.
 
 Section 4.2
-Cardiovascular Procedures: All cardiovascular treatments, including experimental and advanced interventional procedures, angioplasty, stent placement, bypass surgery, heart transplants, and pacemaker implantation, are fully covered up to the Base Sum Insured.
+Cardiovascular Procedures: All cardiovascular treatments, including experimental and advanced interventional procedures, angioplasty, stent placement (ICD code I25.10), bypass surgery, heart transplants, and pacemaker implantation, are fully covered up to the Base Sum Insured.
 
 Section 4.3
-Maternity and Newborn Cover: Maternity expenses, including normal delivery, cesarean section, and pre/post-natal care, are covered up to $25,000. Newborn baby coverage is automatically activated from day one without any additional premium for the remainder of the policy year.
+Maternity and Newborn Cover: Maternity expenses, including normal delivery, cesarean section, assisted reproduction treatment, and pre/post-natal care, are covered up to $25,000. Newborn baby coverage is automatically activated from day one without any additional premium for the remainder of the policy year, subject to submission of the 12-week and 20-week pregnancy scan reports.
 
 Section 4.4
 Day Care and Modern Treatments: We cover medical expenses for all Day Care procedures. Modern treatments such as Robotic Surgeries, Oral Chemotherapy, Stem Cell Therapy, and advanced immunotherapies are fully covered up to the Base Sum Insured with no sub-limits.
 
+Section 4.5
+Cataract Treatment Sub-limits: There are NO sub-limits for Cataract treatment (ICD code H25.9) under the Premium Plan. Expenses are covered in full up to the Base Sum Insured.
+
+Section 4.6
+Organ Donor Expenses: Medical expenses incurred for organ transplantation, including harvesting surgery for the donor and post-donation complications, are covered in full up to the Base Sum Insured, with an additional dedicated Organ Donor Cover of $25,000 beyond the Base Sum Insured.
+
+Section 4.7
+AYUSH and Alternative Medicine: In-patient treatment under Ayurveda, Yoga and Naturopathy, Unani, Siddha, and Homeopathy at a recognized AYUSH hospital is fully covered up to the Base Sum Insured with no sub-limit, reflecting the plan's holistic care positioning.
+
+Section 4.8
+High-End Diagnostics and OPD Benefit: Outpatient diagnostic tests, including advanced imaging and specialist-ordered laboratory panels, are covered up to $25,000 per policy year on an OPD basis, in addition to in-patient diagnostic coverage.
+
+Section 4.9
+Hospital Daily Cash Benefit: A fixed daily cash benefit of $150 per day of hospitalization, up to 30 days per policy year, is payable in addition to any other admissible claim, to offset incidental costs incurred by the patient or accompanying family member.
+
 Section 5.1
 General Exclusions: The policy does NOT cover:
-1. Cosmetic, aesthetic, or plastic surgery, unless medically necessary for reconstruction.
+1. Cosmetic, aesthetic, or plastic surgery, unless medically necessary for reconstruction following an accident, burn, or cancer surgery.
 2. Rehabilitation therapies for substance abuse or alcoholism.
+3. Treatment obtained outside a recognized medical system or from a non-licensed practitioner.
 
 Section 5.2
 Waiting Periods for Pre-Existing Diseases: Any disease, illness, or injury that was diagnosed or treated prior to the policy inception is considered a Pre-Existing Disease (PED). Under the Premium Plan, the waiting period for PEDs is waived completely (0 months).
 
 Section 5.3
-Specific Disease Waiting Periods: There are NO specific disease waiting periods under this policy. All conditions, including Cataract, Glaucoma, Hernia, and Joint Replacements, are covered from day one.
+Specific Disease Waiting Periods: There are NO specific disease waiting periods under this policy. All conditions, including Cataract, Glaucoma, Hernia (ICD code K40.90), and Joint Replacements (ICD code Z96.65), are covered from day one.
+
+Section 5.4
+Restoration and Bonus of Sum Insured: Automatic Restoration of up to 100% of the Sum Insured applies an unlimited number of times within a policy year, immediately upon partial or full utilization of the coverage limit, applicable to both related and unrelated subsequent claims. In addition, a Guaranteed Bonus of 100% of the expiring Sum Insured accrues for each claim-free policy year, up to an unlimited cumulative Sum Insured, as an optional cover.
 
 Section 6.1
 Co-Payment: The Premium Plan operates strictly on a zero co-payment basis, regardless of the policyholder's age, hospital network, or room type chosen.
 
+Section 6.2
+Voluntary Deductible: Policyholders may opt for a voluntary deductible of up to 20% of the Sum Insured, subject to a maximum of $50,000, in exchange for a corresponding premium reduction determined at underwriting.
+
 Section 7.1
-Global Network Hospital Coverage: Claims arising from both domestic and international Network Hospitals are eligible for cashless processing. A dedicated concierge desk is available 24/7 to arrange hospital admissions.
+Global Network Hospital Coverage: Claims arising from both domestic and international Network Hospitals are eligible for cashless processing. A dedicated concierge desk is available 24/7 to arrange hospital admissions, including international second medical opinions from an internationally available panel of medical practitioners.
 
 Section 7.2
 Non-Network Hospital Claims: Treatment taken at Non-Network hospitals will be processed on a reimbursement basis without any standard percentage deduction. Claims will be fast-tracked and processed within 48 hours of document submission.
+
+Section 7.3
+E-Second Medical Opinion: Each insured member is entitled to one domestic and one international second medical opinion per policy year from the insurer's panel of practitioners, obtained by submitting medical records electronically or by courier.
+
+Section 8.1
+Tele-Consultation and AI Health Monitoring: Unlimited audio, video, and text tele-consultations are available through the insurer's mobile application. The application also offers an AI-driven face scan feature allowing the insured to monitor vital parameters such as heart rate, oxygen saturation, and respiration rate up to twice per month, as a wellness aid and not a diagnostic substitute.
+
+Section 8.2
+Dental and Wellness Add-ons: Annual dental consultation, X-ray, and scaling benefits are included from the second policy year onward. A wellness program offering up to a 20% renewal discount is available for policyholders completing designated annual health activities.
+
+Section 9.1
+Free Look Period: A free look period of 30 days from the date of receipt of the policy document is available, during which the policyholder may cancel the policy for a full refund, provided no claim has been made.
+
+Section 9.2
+Grievance Redressal: Policyholders may escalate unresolved grievances to the Grievance Redressal Officer at grievances@starinsuredemo.com, and subsequently to the Insurance Ombudsman if the matter remains unresolved after 30 days. Premium Plan policyholders additionally have access to a dedicated relationship manager for claims escalations.

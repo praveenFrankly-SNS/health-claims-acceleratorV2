@@ -1,26 +1,50 @@
 Section 1.1
-Policy Overview: The Silver Health Insurance Plan is designed to provide essential health coverage at an affordable premium. It covers basic hospitalization expenses arising out of illness, disease, or accidental injury.
+Policy Overview: The Star Silver Health Insurance Plan is designed to provide essential health coverage at an affordable premium. It covers basic hospitalization expenses arising out of illness, disease, or accidental injury, with standard sub-limits and co-payments designed to keep premiums accessible for budget-conscious policyholders.
 
 Section 1.2
-Eligibility and Sum Insured: This policy is available for individuals aged 18 to 65. The Base Sum Insured options range from $50,000 to $200,000. All claims are subject to the Base Sum Insured limit.
+Eligibility and Sum Insured: This policy is available for individuals aged 18 to 65. Dependent children are eligible for cover from 91 days of age to 25 years. The Base Sum Insured options range from $50,000 to $200,000. All claims are subject to the Base Sum Insured limit.
+
+Section 1.3
+Policy Term and Renewal: The Silver Plan is available for a 1-year term, renewable annually. A grace period of 15 days is allowed for renewal premium payment. Lifetime renewability is not guaranteed and is subject to the insurer's underwriting review at each renewal cycle after age 65.
 
 Section 2.1
 In-Patient Hospitalization: We will cover medical expenses for hospitalization exceeding 24 consecutive hours. This includes room rent, nursing charges, intensive care unit (ICU) charges, surgeon fees, anesthetist fees, and cost of medicines and drugs.
 
 Section 2.2
-Room Rent and ICU Limits: Room rent is strictly capped at 1% of the Base Sum Insured per day. Intensive Care Unit (ICU) and High Dependency Unit (HDU) charges are capped at 2% of the Base Sum Insured per day. If a room with higher rent is chosen, all associated medical expenses will be proportionately reduced.
+Room Rent and ICU Limits: Room rent is strictly capped at 1% of the Base Sum Insured per day. Intensive Care Unit (ICU) and High Dependency Unit (HDU) charges are capped at 2% of the Base Sum Insured per day. If a room with higher rent is chosen, all associated medical expenses (including nursing, consultant fees, and diagnostics) will be proportionately reduced.
+
+Section 2.3
+Consumables and Non-Medical Items: Non-medical consumables such as gloves, syringes, and PPE kits are not covered under the base plan and must be borne by the insured, unless added through the optional Consumables Cover rider at an additional premium.
 
 Section 3.1
 Pre and Post Hospitalization: Medical expenses incurred up to 30 days prior to the date of admission, and up to 60 days post discharge, are covered under this policy, provided they are related to the same condition for which hospitalization was required.
+
+Section 3.2
+Ambulance Charges: Emergency road ambulance services are covered up to a fixed limit of $1,000 per policy year, provided transportation is to a recognized local network hospital.
 
 Section 4.1
 Coverage for Respiratory Illnesses: Treatment for acute and chronic lower respiratory infections, including but not limited to Bronchitis, Asthma, and Pneumonia (ICD codes J12-J18, including J12.9 and J18.9), is fully covered subject to a standard 10% co-payment.
 
 Section 4.2
-Cardiovascular Procedures: Basic cardiovascular treatments, including angioplasty and stent placement, are covered up to a sub-limit of 50% of the Base Sum Insured. Pacemaker implantation is covered up to $5,000.
+Cardiovascular Procedures: Basic cardiovascular treatments, including angioplasty and stent placement (ICD code I25.10), are covered up to a sub-limit of 50% of the Base Sum Insured. Pacemaker implantation is covered up to $5,000.
 
 Section 4.3
-Day Care Procedures: We cover medical expenses for 150+ listed Day Care procedures which require less than 24 hours of hospitalization due to technological advancements. This includes cataract surgery, radiotherapy, and hemodialysis.
+Day Care Procedures: We cover medical expenses for listed Day Care procedures which require less than 24 hours of hospitalization due to technological advancements. This includes radiotherapy and hemodialysis.
+
+Section 4.4
+Cataract Treatment Sub-limits: Medical expenses for Cataract treatment (ICD code H25.9) shall be capped at a strict sub-limit of $30,000 per eye, or the actual expenses incurred, whichever is lower.
+
+Section 4.5
+Joint Replacement Sub-limits: Expenses related to joint replacement surgery (ICD code Z96.65) are capped at a sub-limit of $150,000 per surgery, unless arising directly from a road traffic accident.
+
+Section 4.6
+Maternity Cover: Maternity benefits are not included in the base Silver Plan and are available only as a chargeable optional rider, subject to a waiting period of 36 months and a sub-limit of $5,000 for normal delivery and $7,500 for cesarean section.
+
+Section 4.7
+AYUSH Treatment: In-patient treatment under Ayurveda, Yoga and Naturopathy, Unani, Siddha, and Homeopathy at a recognized AYUSH hospital is covered up to a sub-limit of 25% of the Base Sum Insured.
+
+Section 4.8
+Organ Donor Expenses: Medical expenses for the organ donor are not covered under the base Silver Plan. This benefit is available only through the optional Organ Donor Cover rider, capped at $10,000.
 
 Section 5.1
 General Exclusions: The policy does NOT cover any medical expenses incurred for:
@@ -28,6 +52,7 @@ General Exclusions: The policy does NOT cover any medical expenses incurred for:
 2. Cosmetic, aesthetic, or plastic surgery, unless required due to an accident or burns.
 3. Unproven, experimental, or investigational treatments.
 4. Dietary supplements and substances that can be purchased without prescription.
+5. Outpatient consultations and diagnostics not connected to an admissible hospitalization.
 
 Section 5.2
 Waiting Periods for Pre-Existing Diseases: Any disease, illness, or injury that was diagnosed or treated within 48 months prior to the policy inception is considered a Pre-Existing Disease (PED). Treatment for PEDs is strictly excluded until 48 months of continuous coverage have elapsed.
@@ -35,15 +60,33 @@ Waiting Periods for Pre-Existing Diseases: Any disease, illness, or injury that 
 Section 5.3
 Specific Disease Waiting Periods: Treatment for the following conditions is excluded for the first 24 months of the policy:
 1. Cataract and Glaucoma.
-2. Hernia, Hydrocele, and Piles.
+2. Hernia, Hydrocele, and Piles (ICD code K40.90).
 3. Joint replacement surgeries (unless due to an accident).
 4. Calculus diseases of the gall bladder and urogenital system.
 
+Section 5.4
+Restoration of Sum Insured: A restoration benefit is not included in the base Silver Plan. Policyholders wishing to add this protection must opt for the Restoration Benefit rider at renewal, which provides a one-time 50% restoration for unrelated illnesses once the Base Sum Insured is exhausted.
+
+Section 5.5
+No Claim Bonus: For every claim-free policy year, the Base Sum Insured is increased by 5% at renewal, up to a maximum cumulative bonus of 25% of the original Base Sum Insured.
+
 Section 6.1
 Co-Payment: A mandatory co-payment of 20% applies to all approved claims for policyholders aged 60 years and above at the time of claim. A standard 10% co-payment applies to all respiratory and cardiovascular claims regardless of age.
+
+Section 6.2
+Voluntary Deductible: Policyholders may opt for a voluntary deductible of up to $2,000 in exchange for a reduced premium, applicable per claim before the company's liability begins.
 
 Section 7.1
 Network Hospital Coverage and Cashless Processing: Claims arising from Network Hospitals are eligible for cashless processing. The insured must obtain pre-authorization at least 48 hours before planned admission. In emergencies, authorization must be requested within 24 hours of admission.
 
 Section 7.2
 Non-Network Hospital Claims: Treatment taken at Non-Network hospitals will be processed on a reimbursement basis. The insured must bear the initial cost and submit all original bills, discharge summaries, and medical reports within 15 days of discharge. A 10% deduction will be applied to the approved claim amount for utilizing a Non-Network facility.
+
+Section 7.3
+Claim Documentation Requirements: Reimbursement claims must include the original discharge summary, itemized bills, investigation reports, and prescriptions. Incomplete submissions will be returned, and the insured must resubmit within 15 days to avoid claim rejection.
+
+Section 8.1
+Free Look Period: A free look period of 15 days from the date of receipt of the policy document is available, during which the policyholder may cancel the policy for a full refund, provided no claim has been made.
+
+Section 8.2
+Grievance Redressal: Policyholders may escalate unresolved grievances to the Grievance Redressal Officer at grievances@starinsuredemo.com, and subsequently to the Insurance Ombudsman if the matter remains unresolved after 30 days.
