@@ -18,3 +18,6 @@ models/
 
 # Exclude local env
 .env
+
+# Exclude local python data scripts and raw data folders
+data/*.py

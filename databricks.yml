@@ -9,7 +9,7 @@ targets:
     mode: development
     workspace:
       host: https://dbc-8285a47b-ba40.cloud.databricks.com
-      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/health-claims-accelerator/demo
+      root_path: /Workspace/Users/${workspace.current_user.userName}/health-claims-accelerator
 
 variables:
   catalog:
