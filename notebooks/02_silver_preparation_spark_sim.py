@@ -437,11 +437,15 @@ else:
 silver_claims_full_name = f"{CATALOG_NAME}.{SCHEMA_NAME}.silver_claims"
 print(f"Writing compatibility table to {silver_claims_full_name}...")
 
-df_silver_claims = df_silver.join(
-    df_claims.select("claim_id", "is_fraud"),
-    on="claim_id",
-    how="left"
-).withColumn("claim_velocity", col("policy_claim_velocity_90d"))
+if "is_fraud" in df_claims.columns:
+    df_silver_claims = df_silver.join(
+        df_claims.select("claim_id", "is_fraud"),
+        on="claim_id",
+        how="left"
+    ).withColumn("claim_velocity", col("policy_claim_velocity_90d"))
+else:
+    df_silver_claims = df_silver.withColumn("is_fraud", lit(None).cast("integer")) \
+                                .withColumn("claim_velocity", col("policy_claim_velocity_90d"))
 
 if spark.catalog.tableExists(silver_claims_full_name):
     deltaTableClaims = DeltaTable.forName(spark, silver_claims_full_name)
@@ -474,15 +478,20 @@ except Exception:
     print(f"  bronze_claim_submissions_training not found — falling back to inference batch")
     df_training_claims = df_claims
 
+if "is_fraud" in df_training_claims.columns:
+    df_training_sel = df_training_claims.select("claim_id", col("is_fraud").alias("is_fraud_training"))
+else:
+    df_training_sel = df_training_claims.select("claim_id").withColumn("is_fraud_training", lit(None).cast("integer"))
+
 # Run the same feature columns that silver already computed, but joined onto the full training set
 # We need: is_fraud + the already-computed silver features for training claim_ids
 df_history_batch = df_silver_claims.join(
-    df_training_claims.select("claim_id", col("is_fraud").alias("is_fraud_training")),
+    df_training_sel,
     on="claim_id",
     how="right"  # right join: keep ALL training claims, even those not in current inference batch
 ).withColumn(
     "is_fraud",
-    col("is_fraud_training")
+    coalesce(col("is_fraud_training"), col("is_fraud"))
 ).drop("is_fraud_training")
 
 # For training claims that aren't in the current inference silver features,

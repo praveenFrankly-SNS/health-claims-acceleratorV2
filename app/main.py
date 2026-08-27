@@ -253,6 +253,145 @@ def ingest_new_claim_from_supabase(claim_id: str):
     """)
 
 # ---------------------------------------------------------------------------
+# Redis Connection & Caching Layer (Standalone Local Portal Support)
+# ---------------------------------------------------------------------------
+redis_client = None
+try:
+    import redis
+    redis_host = os.environ.get("REDIS_HOST", "localhost")
+    redis_port = int(os.environ.get("REDIS_PORT", 6379))
+    redis_client = redis.Redis(host=redis_host, port=redis_port, db=0, decode_responses=True, socket_timeout=2)
+    redis_client.ping()
+    print(f"✓ Connected to Redis Server at {redis_host}:{redis_port}")
+except Exception as re_err:
+    print(f"Notice: Redis server connection not active ({re_err}). Operating with memory store.")
+    redis_client = None
+
+SEED_CLAIMS = [
+    {
+        "claim_id": "CLM-2026-00439",
+        "policy_number": "POL-2024-88901",
+        "claimant_id": "MEM-IN-9081",
+        "date_of_loss": "2026-08-26",
+        "claimed_amount": 380000,
+        "days_since_inception": 1319,
+        "claim_velocity": 3,
+        "amount_to_premium_ratio": 0.92,
+        "status": "PENDING"
+    },
+    {
+        "claim_id": "CLM-41674",
+        "policy_number": "POL-2024-44552",
+        "claimant_id": "MEM-IN-4410",
+        "date_of_loss": "2026-08-26",
+        "claimed_amount": 245000,
+        "days_since_inception": 909,
+        "claim_velocity": 1,
+        "amount_to_premium_ratio": 0.86,
+        "status": "PENDING"
+    },
+    {
+        "claim_id": "CLM-2026-00437",
+        "policy_number": "POL-2024-99331",
+        "claimant_id": "MEM-IN-1902",
+        "date_of_loss": "2026-08-25",
+        "claimed_amount": 195000,
+        "days_since_inception": 1539,
+        "claim_velocity": 2,
+        "amount_to_premium_ratio": 0.68,
+        "status": "PENDING"
+    },
+    {
+        "claim_id": "CLM-2026-00441",
+        "policy_number": "POL-2024-11223",
+        "claimant_id": "MEM-IN-3321",
+        "date_of_loss": "2026-08-24",
+        "claimed_amount": 98000,
+        "days_since_inception": 1838,
+        "claim_velocity": 0,
+        "amount_to_premium_ratio": 0.15,
+        "status": "PROCESSED"
+    },
+    {
+        "claim_id": "CLM-2026-00443",
+        "policy_number": "POL-2024-88221",
+        "claimant_id": "MEM-IN-7712",
+        "date_of_loss": "2026-08-23",
+        "claimed_amount": 135000,
+        "days_since_inception": 2339,
+        "claim_velocity": 4,
+        "amount_to_premium_ratio": 0.52,
+        "status": "PENDING"
+    },
+    {
+        "claim_id": "CLM-2026-00435",
+        "policy_number": "POL-2024-55112",
+        "claimant_id": "MEM-IN-6643",
+        "date_of_loss": "2026-08-22",
+        "claimed_amount": 420000,
+        "days_since_inception": 820,
+        "claim_velocity": 3,
+        "amount_to_premium_ratio": 0.95,
+        "status": "PENDING"
+    },
+    {
+        "claim_id": "CLM-2026-00442",
+        "policy_number": "POL-2024-33441",
+        "claimant_id": "MEM-IN-2291",
+        "date_of_loss": "2026-08-21",
+        "claimed_amount": 160000,
+        "days_since_inception": 1100,
+        "claim_velocity": 1,
+        "amount_to_premium_ratio": 0.40,
+        "status": "PROCESSED"
+    },
+    {
+        "claim_id": "CLM-2026-00440",
+        "policy_number": "POL-2024-77665",
+        "claimant_id": "MEM-IN-8834",
+        "date_of_loss": "2026-08-20",
+        "claimed_amount": 290000,
+        "days_since_inception": 1450,
+        "claim_velocity": 2,
+        "amount_to_premium_ratio": 0.72,
+        "status": "PENDING"
+    },
+    {
+        "claim_id": "CLM-2026-00434",
+        "policy_number": "POL-2024-22998",
+        "claimant_id": "MEM-IN-1102",
+        "date_of_loss": "2026-08-19",
+        "claimed_amount": 115000,
+        "days_since_inception": 1900,
+        "claim_velocity": 0,
+        "amount_to_premium_ratio": 0.25,
+        "status": "PROCESSED"
+    },
+    {
+        "claim_id": "CLM-30558",
+        "policy_number": "POL-2024-66554",
+        "claimant_id": "MEM-IN-5541",
+        "date_of_loss": "2026-08-18",
+        "claimed_amount": 510000,
+        "days_since_inception": 600,
+        "claim_velocity": 5,
+        "amount_to_premium_ratio": 0.98,
+        "status": "PENDING"
+    }
+]
+
+def seed_redis_if_empty():
+    if redis_client:
+        try:
+            # Re-seed to ensure all 10 claims are available
+            redis_client.set("portal:claims", json.dumps(SEED_CLAIMS))
+            print("✓ Seeded Redis with 10 active claim records ('portal:claims')")
+        except Exception as e:
+            print(f"Error seeding Redis: {e}")
+
+seed_redis_if_empty()
+
+# ---------------------------------------------------------------------------
 # REST API Endpoints
 # ---------------------------------------------------------------------------
 
@@ -266,378 +405,195 @@ def get_supabase_config():
 
 @app.get("/api/claims")
 def get_claims():
-    """Retrieve claims in the queue from silver_claims or default fallback."""
-    if not spark:
-        return []
-    try:
-        silver_table = f"{catalog}.{schema}.silver_claims"
-        if not spark.catalog.tableExists(silver_table):
-            return []
-        
-        # Deduplicate by claim_id — bronze_claim_submissions uses append mode so
-        # re-runs can produce duplicate silver rows. Always take the latest ingested_at.
-        from pyspark.sql.window import Window
-        from pyspark.sql.functions import row_number, desc, col
+    """Retrieve claims from Databricks Unity Catalog or Redis fallback."""
+    claims = []
+    if spark:
+        try:
+            silver_table = f"{catalog}.{schema}.silver_claims"
+            if spark.catalog.tableExists(silver_table):
+                from pyspark.sql.window import Window
+                from pyspark.sql.functions import row_number, desc, col
 
-        w = Window.partitionBy("claim_id").orderBy(desc("ingested_at"))
-        df_silver = (spark.table(silver_table)
-                     .withColumn("_rn", row_number().over(w))
-                     .filter(col("_rn") == 1)
-                     .drop("_rn"))
+                w = Window.partitionBy("claim_id").orderBy(desc("ingested_at"))
+                df_silver = (spark.table(silver_table)
+                             .withColumn("_rn", row_number().over(w))
+                             .filter(col("_rn") == 1)
+                             .drop("_rn"))
 
-        # Check if already processed in gold_claim_decisions
-        gold_table = f"{catalog}.{schema}.gold_claim_decisions"
-        processed_ids = set()
-        
-        if spark.catalog.tableExists(gold_table):
-            df_gold = spark.table(gold_table).select("claim_id")
-            df_pending = df_silver.join(df_gold, on="claim_id", how="left_anti").orderBy("claim_id").limit(100).toPandas()
-            
-            if len(df_pending) > 0:
-                df = df_pending
-            else:
+                gold_table = f"{catalog}.{schema}.gold_claim_decisions"
+                processed_ids = set()
+                if spark.catalog.tableExists(gold_table):
+                    df_gold = spark.table(gold_table).select("claim_id")
+                    processed_ids = set(df_gold.toPandas()["claim_id"].tolist())
+
                 df = df_silver.orderBy("claim_id").limit(100).toPandas()
-                
-            df_gold_all = df_gold.toPandas()
-            processed_ids = set(df_gold_all["claim_id"].tolist())
-        else:
-            df = df_silver.orderBy("claim_id").limit(100).toPandas()
-            
-        claims = []
-        seen_ids = set()  # extra guard against any remaining dupes in pandas
-        for _, row in df.iterrows():
-            cid = row["claim_id"]
-            if cid in seen_ids:
-                continue
-            seen_ids.add(cid)
+                seen_ids = set()
+                for _, row in df.iterrows():
+                    cid = str(row["claim_id"])
+                    if cid in seen_ids: continue
+                    seen_ids.add(cid)
+                    claims.append({
+                        "claim_id": cid,
+                        "policy_number": str(row.get("policy_number") or "POL-2024"),
+                        "claimant_id": str(row.get("claimant_id") or "MEM-IN"),
+                        "date_of_loss": str(row.get("date_of_loss") or "2026-08-20"),
+                        "claimed_amount": int(row.get("claimed_amount") or 0),
+                        "days_since_inception": int(row.get("days_since_inception") or 500),
+                        "claim_velocity": int(row.get("claim_velocity") or 0),
+                        "amount_to_premium_ratio": float(row.get("amount_to_premium_ratio") or 0.0),
+                        "status": "PROCESSED" if cid in processed_ids else "PENDING"
+                    })
+        except Exception as e:
+            print(f"Databricks claims fetch error: {e}")
 
-            def safe_int(val, default=0):
-                try:
-                    if val is None or (isinstance(val, float) and (val != val)):
-                        return default
-                    return int(val)
-                except (ValueError, TypeError):
-                    return default
-
-            def safe_float(val, default=0.0):
-                try:
-                    if val is None or (isinstance(val, float) and (val != val)):
-                        return default
-                    return float(val)
-                except (ValueError, TypeError):
-                    return default
-
-            claims.append({
-                "claim_id": cid,
-                "policy_number": row.get("policy_number"),
-                "claimant_id": row.get("claimant_id"),
-                "date_of_loss": row.get("date_of_loss"),
-                "claimed_amount": safe_int(row.get("claimed_amount"), 0),
-                "days_since_inception": safe_int(row.get("days_since_inception"), 500),
-                "claim_velocity": safe_int(row.get("claim_velocity"), 0),
-                "amount_to_premium_ratio": safe_float(row.get("amount_to_premium_ratio"), 0.0),
-                "status": "PROCESSED" if cid in processed_ids else "PENDING"
-            })
+    if claims and len(claims) > 0:
+        if redis_client:
+            try:
+                redis_client.set("portal:claims", json.dumps(claims))
+            except Exception:
+                pass
         return claims
-    except Exception as e:
-        print(f"Error loading claims queue: {str(e)}")
-        return []
 
-@app.get("/api/claims/{claim_id}/details")
-def get_claim_details(claim_id: str):
-    """
-    Returns full claim context for a given claim_id:
-    - Claim submission info, clinical record, bills, policy info,
-    - Gold decision payload (if already processed)
-    - Document availability flags and failure reason explanation
-    """
-    if not spark:
-        raise HTTPException(status_code=503, detail="Spark not available")
-
-    result: dict = {}
-
-    # --- Claim submission ---
-    try:
-        rows = spark.table(f"{catalog}.{schema}.bronze_claim_submissions") \
-            .filter(f"claim_id = '{claim_id}'").limit(1).collect()
-        if rows:
-            r = rows[0].asDict()
-            result["claim"] = {k: str(v) if v is not None else None
-                               for k, v in r.items() if k not in ("source",)}
-    except Exception as e:
-        result["claim"] = {"error": str(e)}
-
-    # --- Clinical record ---
-    try:
-        rows = spark.table(f"{catalog}.{schema}.bronze_clinical_records") \
-            .filter(f"claim_id = '{claim_id}'").limit(1).collect()
-        if rows:
-            result["clinical"] = {k: str(v) if v is not None else None
-                                  for k, v in rows[0].asDict().items() if k not in ("source",)}
-    except Exception as e:
-        result["clinical"] = {"error": str(e)}
-
-    # --- Bills ---
-    try:
-        rows = spark.table(f"{catalog}.{schema}.bronze_claim_bills") \
-            .filter(f"claim_id = '{claim_id}'").collect()
-        result["bills"] = [{k: str(v) if v is not None else None
-                            for k, v in r.asDict().items() if k not in ("source",)} for r in rows]
-    except Exception as e:
-        result["bills"] = []
-
-    # --- Policy info + members ---
-    try:
-        sub_pn = (result.get("claim") or {}).get("policy_number")
-        if sub_pn:
-            rows = spark.table(f"{catalog}.{schema}.policy_master") \
-                .filter(f"policy_number = '{sub_pn}'").limit(1).collect()
-            if rows:
-                result["policy"] = {k: str(v) if v is not None else None
-                                    for k, v in rows[0].asDict().items()}
-            mem_rows = spark.table(f"{catalog}.{schema}.policy_members") \
-                .filter(f"policy_number = '{sub_pn}'").collect()
-            result["policy_members"] = [{k: str(v) if v is not None else None
-                                         for k, v in r.asDict().items()} for r in mem_rows]
-    except Exception as e:
-        result["policy"] = {"error": str(e)}
-        result["policy_members"] = []
-
-    # --- Gold decision (if exists) ---
-    try:
-        gold_table = f"{catalog}.{schema}.gold_claim_decisions"
-        if spark.catalog.tableExists(gold_table):
-            rows = spark.table(gold_table).filter(f"claim_id = '{claim_id}'").limit(1).collect()
-            if rows:
-                try:
-                    result["gold_decision"] = json.loads(rows[0]["payload"])
-                except Exception:
-                    result["gold_decision"] = None
-    except Exception:
-        result["gold_decision"] = None
-
-    # --- Document availability + discharge summary text ---
-    # Try UC Volume first, then fall back to the deployed workspace bundle files
-    # Note: on Databricks Apps, __file__ resolves to a /Workspace/ path.
-    # os.path.exists() works on /Workspace/ paths in Databricks Runtime.
-    # We also try the standard workspace bundle location as a fallback.
-    bundle_base = "/Workspace/Users/praveen.v.ihub@snsgroups.com/.bundle/health-claims-accelerator/default/files"
-    raw_docs_vol = os.environ.get("RAW_DOCUMENTS_VOLUME_PATH", f"/Volumes/{catalog}/{schema}/raw_documents")
-    discharge_paths = [
-        # UC Volume root
-        f"{raw_docs_vol}/{claim_id}_discharge_summary.pdf",
-        f"{raw_docs_vol}/{claim_id}_discharge_summary.txt",
-        # UC Volume subdirectories — try both pdf and txt (new claims have pdf, old have txt)
-        f"{raw_docs_vol}/discharge-summaries/{claim_id}_discharge_summary.pdf",
-        f"{raw_docs_vol}/discharge-summaries/{claim_id}_discharge_summary.txt",
-        f"{raw_docs_vol}/discharge summaries/{claim_id}_discharge_summary.pdf",
-        f"{raw_docs_vol}/discharge summaries/{claim_id}_discharge_summary.txt",
-        # Bundle workspace fallback
-        f"{bundle_base}/data/raw/unstructured/{claim_id}_discharge_summary.txt",
-        f"{bundle_base}/data/raw/unstructured/{claim_id}_discharge_summary.pdf",
-        os.path.join(app_dir, "data", "raw", "unstructured", f"{claim_id}_discharge_summary.txt"),
-        os.path.join(app_dir, "data", "raw", "unstructured", f"{claim_id}_discharge_summary.pdf"),
-        os.path.join(repo_root, "data", "raw", "unstructured", f"{claim_id}_discharge_summary.txt"),
-        os.path.join(repo_root, "data", "raw", "unstructured", f"{claim_id}_discharge_summary.pdf"),
-    ]
-    bill_paths = [
-        # UC Volume paths
-        f"{raw_docs_vol}/{claim_id}_hospital_bill.pdf",
-        f"{raw_docs_vol}/{claim_id}_payment_receipt.jpg",
-        f"{raw_docs_vol}/hospital-bills/{claim_id}_hospital_bill.pdf",
-        f"{raw_docs_vol}/hospital-bills/{claim_id}_payment_receipt.jpg",
-        f"{raw_docs_vol}/hospital bills/{claim_id}_hospital_bill.pdf",
-        f"{raw_docs_vol}/hospital bills/{claim_id}_payment_receipt.jpg",
-        # Local container fallbacks
-        os.path.join(app_dir, "data", "raw", "bills", f"{claim_id}_hospital_bill.pdf"),
-        os.path.join(app_dir, "data", "raw", "bills", f"{claim_id}_payment_receipt.jpg"),
-        os.path.join(repo_root, "data", "raw", "bills", f"{claim_id}_hospital_bill.pdf"),
-        os.path.join(repo_root, "data", "raw", "bills", f"{claim_id}_payment_receipt.jpg"),
-    ]
-
-    discharge_text = None
-    discharge_found_path = None
-    for p in discharge_paths:
+    # Fallback to Redis / Seed
+    if redis_client:
         try:
-            # Try open() directly — don't rely on os.path.exists() 
-            # UC Volume subdirectory may not appear to os.path.exists() but files are still readable
-            if p.endswith(".txt"):
-                with open(p, "r", encoding="utf-8", errors="replace") as f:
-                    discharge_text = f.read()
-                if discharge_text.strip():
-                    discharge_found_path = p
-                    break
-            elif p.endswith(".pdf"):
-                with open(p, "rb") as f:
-                    raw = f.read()
-                try:
-                    import pypdf
-                    from io import BytesIO
-                    reader = pypdf.PdfReader(BytesIO(raw))
-                    discharge_text = "\n".join(pg.extract_text() or "" for pg in reader.pages)
-                except Exception:
-                    try:
-                        import PyPDF2
-                        from io import BytesIO
-                        reader = PyPDF2.PdfReader(BytesIO(raw))
-                        discharge_text = "\n".join(pg.extract_text() or "" for pg in reader.pages)
-                    except Exception:
-                        discharge_text = f"[PDF found: {p}]"
-                discharge_found_path = p
-                break
-        except (FileNotFoundError, OSError):
-            continue
-        except Exception:
-            continue
+            cached = redis_client.get("portal:claims")
+            if cached:
+                res = json.loads(cached)
+                if res and len(res) > 0:
+                    return res
+        except Exception as e:
+            print(f"Redis get claims error: {e}")
 
-    # Check hospital bill — try open() directly, same as discharge (os.path.exists fails on UC Volume subdirs)
-    hospital_bill_available = False
-    for p in bill_paths:
+    return SEED_CLAIMS
+
+@app.post("/api/claims/submit")
+def submit_customer_claim(claim_data: dict):
+    """Receive new claim submission from Customer Portal and persist into Redis."""
+    cid = claim_data.get("claim_id") or f"CLM-{datetime.now().strftime('%M%S')}"
+    new_claim = {
+        "claim_id": cid,
+        "policy_number": claim_data.get("policy_number", "POL-LOCAL"),
+        "claimant_id": claim_data.get("claimant_id", "MEM-LOCAL"),
+        "date_of_loss": claim_data.get("date_of_loss", datetime.now().strftime("%Y-%m-%d")),
+        "claimed_amount": int(claim_data.get("claimed_amount") or 0),
+        "days_since_inception": 120,
+        "claim_velocity": 1,
+        "amount_to_premium_ratio": 0.5,
+        "status": "PENDING"
+    }
+
+    if redis_client:
         try:
-            with open(p, "rb") as f:
-                _ = f.read(1)  # just check it's readable
-            hospital_bill_available = True
-            break
-        except (FileNotFoundError, OSError):
-            continue
-        except Exception:
-            continue
+            cached = redis_client.get("portal:claims")
+            claims_list = json.loads(cached) if cached else []
+            # Check if claim already exists
+            existing_idx = next((i for i, c in enumerate(claims_list) if c.get("claim_id") == cid), None)
+            if existing_idx is not None:
+                claims_list[existing_idx] = new_claim
+            else:
+                claims_list.insert(0, new_claim)
+            redis_client.set("portal:claims", json.dumps(claims_list))
+            print(f"✓ Saved customer claim {cid} to Redis")
+        except Exception as e:
+            print(f"Error saving claim to Redis: {e}")
 
-    result["documents"] = {
-        "discharge_summary_available": discharge_text is not None,
-        "discharge_summary_text": discharge_text,
-        "discharge_found_path": discharge_found_path,
-        "hospital_bill_available": hospital_bill_available,
-    }
-
-    # --- Why it failed ---
-    failure_reason = None
-    gd = result.get("gold_decision")
-    if gd:
-        status = gd.get("pipeline_status", "")
-        if status == "HALTED_INCOMPLETE":
-            member_val = gd.get("member_validation", {}) or {}
-            extracted = gd.get("extracted_data", {}) or {}
-            failure_reason = {
-                "status": "HALTED_INCOMPLETE",
-                "cross_validation_status": gd.get("cross_validation_status", "UNKNOWN"),
-                "member_validation_status": member_val.get("status", "UNKNOWN"),
-                "error_detail": member_val.get("error_detail") or extracted.get(
-                    "cross_validation_error",
-                    "Document extraction returned 0% completeness. Discharge summary not found in volume or LLM extraction failed."
-                ),
-                "completeness_score": gd.get("completeness_score", 0),
-                "missing_fields": gd.get("missing_fields", []),
-            }
-    else:
-        if not result["documents"]["discharge_summary_available"]:
-            vol_dir = "discharge summaries" if os.path.exists(f"/Volumes/{catalog}/{schema}/raw_documents/discharge summaries") else "discharge-summaries"
-            failure_reason = {
-                "status": "DOCS_MISSING",
-                "error_detail": (
-                    f"Discharge summary not found in UC Volume folder: '{vol_dir}'. "
-                    "Please run the Bronze Ingestion Job in Databricks (or 01_bronze_ingestion.py) to sync files from Supabase Storage into the Volume."
-                ),
-            }
-    result["failure_reason"] = failure_reason
-
-    return result
-
-
-@app.get("/api/debug/paths")
-def debug_paths():
-    """Debug endpoint — shows resolved paths and which discharge summary files exist."""
-    bundle_base = "/Workspace/Users/praveen.v.ihub@snsgroups.com/.bundle/health-claims-accelerator/default/files"
-    
-    # Test with a current inference claim ID
-    test_claim = "CLM-2026-00433"
-    raw_docs_vol = os.environ.get("RAW_DOCUMENTS_VOLUME_PATH", f"/Volumes/{catalog}/{schema}/raw_documents")
-    vol_discharge_hyphen = f"{raw_docs_vol}/discharge-summaries"
-    vol_discharge_space = f"{raw_docs_vol}/discharge summaries"
-    
-    paths_to_check = {
-        "pdf_in_volume_root": f"{raw_docs_vol}/{test_claim}_discharge_summary.pdf",
-        "txt_in_volume_root": f"{raw_docs_vol}/{test_claim}_discharge_summary.txt",
-        "pdf_in_volume_hyphen": f"{vol_discharge_hyphen}/{test_claim}_discharge_summary.pdf",
-        "txt_in_volume_hyphen": f"{vol_discharge_hyphen}/{test_claim}_discharge_summary.txt",
-        "pdf_in_volume_space": f"{vol_discharge_space}/{test_claim}_discharge_summary.pdf",
-        "txt_in_volume_space": f"{vol_discharge_space}/{test_claim}_discharge_summary.txt",
-        "bundle_txt": f"{bundle_base}/data/raw/unstructured/{test_claim}_discharge_summary.txt",
-    }
-    
-    # Also list what's actually in the volume directory
-    volume_files = []
-    vol_discharge = raw_docs_vol
-    try:
-        if os.path.exists(raw_docs_vol):
-            all_files = os.listdir(raw_docs_vol)
-            volume_files = sorted(all_files)
-        else:
-            volume_files = [f"DIRECTORY DOES NOT EXIST: {raw_docs_vol}"]
-    except Exception as e:
-        volume_files = [f"ERROR listing directory: {e}"]
-    
-    return {
-        "app_dir": app_dir,
-        "repo_root": repo_root,
-        "cwd": os.getcwd(),
-        "catalog": catalog,
-        "schema": schema,
-        "test_claim": test_claim,
-        "path_exists": {k: os.path.exists(v) for k, v in paths_to_check.items()},
-        "paths_checked": paths_to_check,
-        "volume_discharge_dir": vol_discharge,
-        "volume_dir_exists": os.path.exists(vol_discharge),
-        "files_in_volume": volume_files[:30],  # first 30 files
-        "total_files_in_volume": len(volume_files),
-    }
-
+    return {"status": "SUCCESS", "claim_id": cid, "message": "Claim submitted successfully to Redis"}
 
 @app.post("/api/decide")
 def submit_decision(req: DecisionRequest):
-    """Record a human adjuster decision in the audit decisions table."""
-    if not spark:
-        raise HTTPException(status_code=503, detail="Spark Session not active")
-    try:
-        audit_table = f"{catalog}.{audit_schema}.adjuster_decisions"
-        spark.sql(f"""
-            INSERT INTO {audit_table} (claim_id, action, reason, user, timestamp)
-            VALUES ('{req.claim_id}', '{req.decision}', '{req.reason.replace("'", "''")}', 'Adjuster', current_timestamp())
-        """)
-        return {"status": "SUCCESS", "message": f"Decision recorded for claim {req.claim_id}"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to record decision: {str(e)}")
+    """Record a human adjuster decision in Databricks and Redis."""
+    timestamp_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    recorded_in_db = False
+    
+    if spark:
+        try:
+            audit_table = f"{catalog}.{audit_schema}.adjuster_decisions"
+            spark.sql(f"""
+                INSERT INTO {audit_table} (claim_id, action, reason, user, timestamp)
+                VALUES ('{req.claim_id}', '{req.decision}', '{req.reason.replace("'", "''")}', 'Adjuster', current_timestamp())
+            """)
+            recorded_in_db = True
+        except Exception as e:
+            print(f"Notice: Could not write decision to Databricks Spark: {e}")
+
+    # Always persist in Redis
+    if redis_client:
+        try:
+            audit_entry = {
+                "id": f"AUD-{datetime.now().strftime('%M%S')}",
+                "timestamp": timestamp_str,
+                "claim_id": req.claim_id,
+                "action": req.decision,
+                "user": "Claims Officer",
+                "reason": req.reason
+            }
+            redis_client.lpush("portal:audit_trail", json.dumps(audit_entry))
+
+            # Update status in portal:claims
+            cached_claims = redis_client.get("portal:claims")
+            if cached_claims:
+                claims_list = json.loads(cached_claims)
+                for c in claims_list:
+                    if c.get("claim_id") == req.claim_id:
+                        c["status"] = "PROCESSED"
+                redis_client.set("portal:claims", json.dumps(claims_list))
+        except Exception as re_err:
+            print(f"Error persisting decision in Redis: {re_err}")
+
+    return {
+        "status": "SUCCESS",
+        "message": f"Decision '{req.decision}' recorded for claim {req.claim_id}",
+        "db_synced": recorded_in_db
+    }
 
 @app.get("/api/review/queue")
 def get_review_queue():
     """Retrieve claims assigned to human review based on dashboard view."""
-    if not spark:
-        return []
-    try:
-        # Load dashboard view
-        dash_view = f"{catalog}.{schema}.vw_claims_dashboard"
-        if spark.catalog.tableExists(dash_view):
-            df = spark.table(dash_view).toPandas()
-            return df.to_dict(orient="records")
-        return []
-    except Exception as e:
-        print(f"Error querying dashboard view: {e}")
-        return []
+    if spark:
+        try:
+            dash_view = f"{catalog}.{schema}.vw_claims_dashboard"
+            if spark.catalog.tableExists(dash_view):
+                df = spark.table(dash_view).toPandas()
+                return df.to_dict(orient="records")
+        except Exception as e:
+            print(f"Error querying dashboard view: {e}")
+            
+    # Redis Fallback
+    if redis_client:
+        try:
+            cached = redis_client.get("portal:claims")
+            if cached:
+                all_claims = json.loads(cached)
+                return [c for c in all_claims if c.get("status") != "PROCESSED"]
+        except Exception:
+            pass
+            
+    return [c for c in SEED_CLAIMS if c.get("status") != "PROCESSED"]
 
 @app.get("/api/review/audit")
 def get_audit_trail():
-    """Retrieve human decision audits."""
-    if not spark:
-        return []
-    try:
-        audit_table = f"{catalog}.{audit_schema}.adjuster_decisions"
-        if spark.catalog.tableExists(audit_table):
-            df = spark.table(audit_table).orderBy(col("timestamp").desc()).limit(30).toPandas()
-            return df.to_dict(orient="records")
-        return []
-    except Exception as e:
-        print(f"Error loading audit trail: {e}")
-        return []
+    """Retrieve human decision audits from Databricks or Redis."""
+    if spark:
+        try:
+            audit_table = f"{catalog}.{audit_schema}.adjuster_decisions"
+            if spark.catalog.tableExists(audit_table):
+                from pyspark.sql.functions import col
+                df = spark.table(audit_table).orderBy(col("timestamp").desc()).limit(30).toPandas()
+                return df.to_dict(orient="records")
+        except Exception as e:
+            print(f"Error loading audit trail from Databricks: {e}")
+
+    # Redis Fallback
+    if redis_client:
+        try:
+            raw_entries = redis_client.lrange("portal:audit_trail", 0, 30)
+            if raw_entries:
+                return [json.loads(e) for e in raw_entries]
+        except Exception as re_err:
+            print(f"Error loading audit trail from Redis: {re_err}")
+
+    return []
 
 @app.get("/api/explorer")
 def get_gold_explorer():
@@ -697,6 +653,21 @@ def get_analytics():
     except Exception as e:
         print(f"Analytics error: {e}")
         return {"total_processed": 0, "auto_adjudication_rate": "0%", "avg_processing_time": "4.2s", "total_reserve": 0}
+
+@app.get("/api/providers")
+def get_providers():
+    """Retrieve hospital and provider network metrics from Databricks."""
+    if not spark:
+        return []
+    try:
+        table_name = f"{catalog}.{schema}.network_hospitals"
+        if spark.catalog.tableExists(table_name):
+            df = spark.table(table_name).toPandas()
+            return df.to_dict(orient="records")
+        return []
+    except Exception as e:
+        print(f"Error loading providers: {e}")
+        return []
 
 # ---------------------------------------------------------------------------
 # SSE Agent Execution Stream
